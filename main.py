@@ -1,9 +1,9 @@
+from break_brick import start_game
 
 
-def print_hi(name):
-    print(f'Hi, {name}')
+def main():
+    start_game()
 
 
 if __name__ == '__main__':
-    print_hi('PyCharm')
-
+    main()
