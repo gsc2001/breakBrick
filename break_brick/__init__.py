@@ -1,8 +1,10 @@
+import signal
+
 from .game import Game
-from .utils import Get, input_to
 
 
 def start_game():
+    signal.signal(signal.SIGINT, signal.SIG_IGN)
     game = Game()
     game.start()
 

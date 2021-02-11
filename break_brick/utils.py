@@ -4,6 +4,17 @@ from select import select
 import sys
 import termios
 
+import subprocess as sp
+
+
+def reset_screen():
+    """Positions the cursor on top left"""
+
+    print("\033[0;0H")
+
+
+
+
 
 class KBHit:
     """
