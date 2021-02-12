@@ -15,8 +15,6 @@ class Paddle(GameObject):
 
         self._width = config.PADDLE_WIDTH_NORMAL
 
-
-
     def move_left(self):
         """Move paddle to left"""
         self._pos[0] -= config.PADDLE_SPEED

@@ -1,4 +1,3 @@
-import os
 import sys
 
 import colorama
@@ -35,14 +34,16 @@ class Screen:
         self.color[:, :, 1] = config.FG_COLOR  # set the FG color
 
     def draw(self, obj: GameObject):
-        """Puts a character at pos"""
+        """
+        Puts an object on screen
+        :param obj: the obj to put
+        """
         _x, _y = map(int, obj.get_position())
         _rep, _color = obj.get_rep()
         _h, _w = map(int, _rep.shape)
 
         self.display[_y: _y + _h, _x:_x + _w] = _rep
         self.color[_y: _y + _h, _x:_x + _w] = _color
-
 
     def show(self):
         """Shows the screen"""

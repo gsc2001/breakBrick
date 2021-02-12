@@ -65,7 +65,7 @@ class GameObject:
 
 class AutoMovingObject(GameObject):
     """
-    Base class for all moving objects
+    Base class for all auto moving objects (i.e. except paddle)
     has properties like vel and other things
     """
 
