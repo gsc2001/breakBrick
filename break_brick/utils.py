@@ -1,5 +1,6 @@
 """Some useful utillities"""
 import atexit
+from enum import Enum
 from select import select
 import sys
 import termios
@@ -13,7 +14,12 @@ def reset_screen():
     print("\033[0;0H")
 
 
-
+class CollisionDirection(str, Enum):
+    """Direction from where the collision has occured"""
+    BELLOW = 'bellow'
+    ABOVE = 'above'
+    RIGHT = 'right'
+    LEFT = 'left'
 
 
 class KBHit:

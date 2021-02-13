@@ -1,6 +1,7 @@
 import numpy as np
 
 import config
+import break_brick.utils as utils
 
 
 class GameObject:
@@ -62,6 +63,18 @@ class GameObject:
     def get_rep(self):
         return self._rep, self._color
 
+    def set_position(self, new_pos: np.ndarray):
+        """
+        Set the position to new position
+        :param new_pos: the new position
+        """
+        _h, _w = self.get_shape()
+        self._pos = np.clip(new_pos, 0, [config.WIDTH - 1 - _w, config.WIDTH - 1 - _h])
+
+    def is_active(self):
+        return self._active
+
+
 
 class AutoMovingObject(GameObject):
     """
@@ -80,3 +93,21 @@ class AutoMovingObject(GameObject):
         """
         super().__init__(rep, pos, color)
         self._velocity = velocity
+
+
+    def update(self):
+        """Update the position of a moving object"""
+        # if not active just return
+        if not self._active:
+            return
+        self.set_position(self._pos + self._velocity)
+
+    def get_velocity(self):
+        """
+        Get velocity of the object
+        :return: velocity as np.array([vx,vy])
+        """
+        return self._velocity
+
+    def set_xvelocity(self, x_velocity):
+        self._velocity[0] = x_velocity

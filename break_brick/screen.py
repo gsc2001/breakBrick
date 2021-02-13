@@ -51,7 +51,7 @@ class Screen:
 
         for i in range(self.height):
             for j in range(self.width):
-                out += "".join(self.color[i][j]) + self.display[i][j]
+                out += "".join(self.color[i][j]) + self.display[i][j] + colorama.Style.RESET_ALL
             out += '\n'
 
         sys.stdout.write(out + colorama.Style.RESET_ALL)
