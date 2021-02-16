@@ -4,8 +4,10 @@ from colorama import Fore, Back, Style
 # get the terminal screen size
 scrh, scrw = map(int, os.popen('stty size', 'r').read().split())
 
-WIDTH = scrw
+PADDLE_SPEED = 3
+
 HEIGHT = scrh - 10
+WIDTH = min(scrw, HEIGHT*PADDLE_SPEED)
 
 FRAME_RATE = 30
 
@@ -17,10 +19,10 @@ FG_COLOR = Fore.GREEN
 PADDLE_WIDTH_NORMAL = 11
 PADDLE_WIDTH_LONG = 15
 PADDLE_WIDTH_SHORT = 9
-PADDLE_SPEED = 1
+PADDLE_ACC = 0.2
 
 # ball
-Y_BALL_SPEED_NORMAL = 0.5
+BALL_SPEED_NORMAL = 0.5
 
 # collision buffer
 COLLISION_BUFFER = 1

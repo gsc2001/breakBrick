@@ -15,10 +15,10 @@ class Ball(AutoMovingObject):
     def __init__(self):
         rep = GameObject.rep_from_str(BALL)
         color = np.array([config.BG_COLOR, colorama.Fore.WHITE + colorama.Style.BRIGHT])
-        pos = np.array([int(config.WIDTH / 2), config.HEIGHT - 4])
-        super().__init__(rep, pos, color, np.array([config.Y_BALL_SPEED_NORMAL, config.Y_BALL_SPEED_NORMAL]))
+        pos = np.array([int(config.WIDTH / 2), config.HEIGHT - 5])
+        super().__init__(rep, pos, color, np.array([0, config.BALL_SPEED_NORMAL]))
 
-    def handle_collision(self, _from: utils.CollisionDirection):
+    def _handle_collision(self, _from: utils.CollisionDirection):
         """
         Handle collision from the given direction
         :param _from: the direction from where the ball collided
@@ -44,12 +44,19 @@ class Ball(AutoMovingObject):
         _h, _w = map(int, self.get_shape())
 
         if _x == 0 or _x == config.WIDTH - 1 - _w:
-            self.handle_collision(_from=utils.CollisionDirection.X)
+            self._handle_collision(_from=utils.CollisionDirection.X)
         if _y == 0:
-            self.handle_collision(_from=utils.CollisionDirection.Y)
+            self._handle_collision(_from=utils.CollisionDirection.Y)
         if _y == config.HEIGHT - _h:
             # bottom wall touched
             self.destroy()
             ball_died = True
 
         return ball_died
+
+    def handle_paddle_collision(self, paddle_middle):
+        """Handle collision with paddle"""
+        _x, _ = self.get_position()
+        _x_vel, _ = self.get_velocity()
+        self._handle_collision(utils.CollisionDirection.Y)
+        self.set_xvelocity(_x_vel + int(_x - paddle_middle) * config.PADDLE_ACC)

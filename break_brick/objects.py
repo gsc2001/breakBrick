@@ -143,8 +143,8 @@ def detect_collision(obja: GameObject, objb: GameObject):
     # basic collision detection using rectangle intersection of with 1 expanded bounding box
     x_start = max(xb0, xa0)
     x_end = min(xa1, xb1)
-    y_start = max(ya0 , yb0)
-    y_end = min(ya1 , yb1)
+    y_start = max(ya0, yb0)
+    y_end = min(ya1, yb1)
 
     if x_start > x_end or y_start > y_end:
         # no collision

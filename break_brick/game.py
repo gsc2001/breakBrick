@@ -81,7 +81,7 @@ class Game:
 
             _x_col, _y_col = detect_collision(ball, self._paddle)
             if _y_col:
-                ball.handle_collision(utils.CollisionDirection.Y)
+                ball.handle_paddle_collision(self._paddle.get_middle())
 
             # check collision with paddle
             # check collision with bricks

@@ -5,5 +5,9 @@ PADDLE = r"""
 """
 
 BALL = r"""
-(O)
+O
+"""
+
+BRICK = r"""
+====
 """

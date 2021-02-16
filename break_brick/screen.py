@@ -22,14 +22,14 @@ class Screen:
         self.height = config.HEIGHT
         self.width = config.WIDTH
 
-        self.display = np.full((self.height, self.width), " ")
+        self.display = np.full((self.height, self.width), ".")
         self.color = np.full((self.height, self.width, 2), "", dtype=object)
         self.clear()
 
     def clear(self):
         """Clears the whole display"""
         utils.reset_screen()
-        self.display[:] = " "
+        self.display[:] = "."
         self.color[:, :, 0] = config.BG_COLOR  # set the BG color
         self.color[:, :, 1] = config.FG_COLOR  # set the FG color
 
