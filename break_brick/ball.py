@@ -12,27 +12,30 @@ class Ball(AutoMovingObject):
     Class for the ball
     """
 
-    def __init__(self):
+    def __init__(self, pos=None, vel=None):
         rep = GameObject.rep_from_str(BALL)
         color = np.array([config.BG_COLOR, colorama.Fore.WHITE + colorama.Style.BRIGHT])
-        pos = np.array([int(config.WIDTH / 2), config.HEIGHT - 5])
-        super().__init__(rep, pos, color, np.array([0, config.BALL_SPEED_NORMAL]))
+        if pos is None:
+            pos = np.array([int(config.WIDTH / 2), config.HEIGHT - 5])
+        if vel is None:
+            vel = np.array([0, config.BALL_SPEED_NORMAL])
+        super().__init__(rep, pos, color, vel)
 
-    def _handle_collision(self, _from: utils.CollisionDirection):
+    def handle_collision(self, x_collision, y_collision):
         """
-        Handle collision from the given direction
-        :param _from: the direction from where the ball collided
+        Handle collision
+        :param x_collision: was the collsion in x
+        :param y_collision: was the collision in y
+        :return:
         """
-        _vel = self.get_velocity()
-        if _from == utils.CollisionDirection.X:
-            self.set_xvelocity(-_vel[0])
-            _vel[1] = 0
-            self.set_position(self._pos + np.sign(-_vel))
+        _x_vel, _y_vel = self.get_velocity()
+        if x_collision:
+            self.set_xvelocity(-_x_vel)
+            self.set_position(self._pos + np.array([np.sign(-_x_vel), 0]))
 
-        elif _from == utils.CollisionDirection.Y:
-            self.set_yvelocity(-_vel[1])
-            _vel[0] = 0
-            self.set_position(self._pos + np.sign(-_vel))
+        if y_collision:
+            self.set_yvelocity(-_y_vel)
+            self.set_position(self._pos + np.array([0, np.sign(-_y_vel)]))
 
     def handle_wall_collision(self) -> bool:
         """
@@ -44,9 +47,9 @@ class Ball(AutoMovingObject):
         _h, _w = map(int, self.get_shape())
 
         if _x == 0 or _x == config.WIDTH - 1 - _w:
-            self._handle_collision(_from=utils.CollisionDirection.X)
+            self.handle_collision(x_collision=True, y_collision=False)
         if _y == 0:
-            self._handle_collision(_from=utils.CollisionDirection.Y)
+            self.handle_collision(x_collision=False, y_collision=True)
         if _y == config.HEIGHT - _h:
             # bottom wall touched
             self.destroy()
@@ -58,5 +61,9 @@ class Ball(AutoMovingObject):
         """Handle collision with paddle"""
         _x, _ = self.get_position()
         _x_vel, _ = self.get_velocity()
-        self._handle_collision(utils.CollisionDirection.Y)
+        self.handle_collision(x_collision=False, y_collision=True)
         self.set_xvelocity(_x_vel + int(_x - paddle_middle) * config.PADDLE_ACC)
+
+    def handle_brick_collision(self, x_collision, y_collision):
+
+        self.handle_collision(x_collision, y_collision)

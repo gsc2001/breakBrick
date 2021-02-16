@@ -8,6 +8,7 @@ import config
 from .screen import Screen
 from .paddle import Paddle
 from .ball import Ball
+from .brick import Brick
 from .objects import detect_collision
 import break_brick.utils as utils
 
@@ -28,7 +29,12 @@ class Game:
         self._keyboard = utils.KBHit()
         self._screen = Screen()
         self._paddle = Paddle()
+
+        # For debug
+        # self._balls = [Ball(np.array([1, config.HEIGHT - 19]), np.array([config.BALL_SPEED_NORMAL, 0]))]
+
         self._balls = [Ball()]
+        self._bricks = [Brick(np.array([config.WIDTH // 2 - 2, config.HEIGHT - 20]), 3)]
         utils.reset_screen()
 
     def _handle_input(self):
@@ -47,11 +53,6 @@ class Game:
 
             self._keyboard.clear()
 
-    # Collision detectors
-
-    def _handle_ball_paddle(self):
-        """Handle ball paddle collision"""
-        pass
 
     def _update_objects(self):
         for ball in self._balls:
@@ -60,6 +61,10 @@ class Game:
     def _draw_objects(self):
 
         self._screen.draw(self._paddle)
+
+        for brick in self._bricks:
+            if brick.is_active():
+                self._screen.draw(brick)
 
         for ball in self._balls:
             if ball.is_active():
@@ -79,14 +84,22 @@ class Game:
                 self._balls.pop(i)
                 self._check_game_over()
 
+            # check collision with paddle
             _x_col, _y_col = detect_collision(ball, self._paddle)
             if _y_col:
                 ball.handle_paddle_collision(self._paddle.get_middle())
 
-            # check collision with paddle
             # check collision with bricks
-            # TODO: collision ball <-> bricks
-            pass
+            for i, brick in enumerate(self._bricks):
+                _x_col, _y_col = detect_collision(ball, brick)
+                if _x_col or _y_col:
+                    ball.handle_brick_collision(_x_col, _y_col)
+                    if brick.handle_ball_collision():
+                        self._bricks.pop(i)
+
+
+
+
 
     def start(self):
         """

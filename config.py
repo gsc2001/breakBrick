@@ -4,10 +4,10 @@ from colorama import Fore, Back, Style
 # get the terminal screen size
 scrh, scrw = map(int, os.popen('stty size', 'r').read().split())
 
-PADDLE_SPEED = 3
+PADDLE_SPEED = 1
 
 HEIGHT = scrh - 10
-WIDTH = min(scrw, HEIGHT*PADDLE_SPEED)
+WIDTH = scrw
 
 FRAME_RATE = 30
 

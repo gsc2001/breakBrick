@@ -62,6 +62,10 @@ class GameObject:
 
         return _color
 
+    def set_color(self, color):
+        """Change color"""
+        self._color = GameObject.color_mask(self._rep, color)
+
     def get_position(self):
         return self._pos.copy()
 
