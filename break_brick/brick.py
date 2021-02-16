@@ -1,6 +1,9 @@
 from colorama import Back, Fore
+import config
 import numpy as np
+import os
 
+import break_brick.utils as utils
 from .objects import GameObject
 from .graphics import BRICK
 
@@ -15,6 +18,28 @@ class Brick(GameObject):
         rep = GameObject.rep_from_str(BRICK)
         self._health = health
         super().__init__(rep, pos, colors[self._health - 1])
+
+    @staticmethod
+    def get_brick_map(path: str):
+        """
+        Get brick map
+        :param path: the file path to txt file
+        :return: list of bricks
+        """
+        bricks = []
+        if not os.path.exists(path):
+            raise SystemExit('Brick map not found')
+        with open(path) as map_file:
+            lines = map_file.readlines()
+            if len(lines) != config.BRICK_END_HEIGHT - config.BRICK_START_HEIGHT + 1:
+                raise SystemExit('Invalid brick map. height not matching')
+
+            for i, line in enumerate(lines):
+                for j, _dig in enumerate(line.split(',')[:-1]):
+                    if _dig != '0':
+                        bricks.append(Brick(utils.get_arr(j * 6, config.BRICK_START_HEIGHT + i), int(_dig)))
+
+        return bricks
 
     def _update_color(self):
         self.set_color(colors[self._health - 1])

@@ -3,6 +3,7 @@ import sys
 
 import colorama
 import numpy as np
+import os
 
 import config
 from .screen import Screen
@@ -34,7 +35,10 @@ class Game:
         # self._balls = [Ball(np.array([1, config.HEIGHT - 19]), np.array([config.BALL_SPEED_NORMAL, 0]))]
 
         self._balls = [Ball()]
-        self._bricks = [Brick(np.array([config.WIDTH // 2 - 2, config.HEIGHT - 20]), 3)]
+        # self._bricks = [Brick(np.array([config.WIDTH // 2 - 2, config.HEIGHT - 17]), 3)]
+        brick_file_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), config.BRICK_MAP_FILE)
+        print(brick_file_path)
+        self._bricks = Brick.get_brick_map(brick_file_path)
         utils.reset_screen()
 
     def _handle_input(self):

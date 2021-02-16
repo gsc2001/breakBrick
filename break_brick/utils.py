@@ -5,6 +5,8 @@ from select import select
 import sys
 import termios
 
+import numpy as np
+
 
 def reset_screen():
     """Positions the cursor on top left"""
@@ -12,7 +14,7 @@ def reset_screen():
     print("\033[0;0H")
 
 
-def check_cross_dist(pa0, pa1, pb0, pb1, dist)->bool:
+def check_cross_dist(pa0, pa1, pb0, pb1, dist) -> bool:
     """check if the min cross dist is < dist"""
     for _pa in [pa0, pa1]:
         for _pb in [pb0, pb1]:
@@ -21,12 +23,15 @@ def check_cross_dist(pa0, pa1, pb0, pb1, dist)->bool:
     return False
 
 
+def get_arr(x, y):
+    """Get pos array"""
+    return np.array([x, y])
+
+
 class CollisionDirection(str, Enum):
     """Direction from where the collision has occured"""
     X = 'X'
     Y = 'Y'
-
-
 
 
 class KBHit:

@@ -27,3 +27,9 @@ BALL_SPEED_NORMAL = 0.5
 # collision buffer
 COLLISION_BUFFER = 1
 
+# brick
+BRICK_START_HEIGHT = HEIGHT - 20
+BRICK_END_HEIGHT = HEIGHT - 15
+BRICK_MAP_FILE = 'brickmap.txt'
+
+
