@@ -5,8 +5,6 @@ from select import select
 import sys
 import termios
 
-import subprocess as sp
-
 
 def reset_screen():
     """Positions the cursor on top left"""
@@ -14,12 +12,21 @@ def reset_screen():
     print("\033[0;0H")
 
 
+def check_cross_dist(pa0, pa1, pb0, pb1, dist)->bool:
+    """check if the min cross dist is < dist"""
+    for _pa in [pa0, pa1]:
+        for _pb in [pb0, pb1]:
+            if abs(_pa - _pb) < 1:
+                return True
+    return False
+
+
 class CollisionDirection(str, Enum):
     """Direction from where the collision has occured"""
-    BELLOW = 'bellow'
-    ABOVE = 'above'
-    RIGHT = 'right'
-    LEFT = 'left'
+    X = 'X'
+    Y = 'Y'
+
+
 
 
 class KBHit:

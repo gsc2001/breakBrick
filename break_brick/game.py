@@ -8,6 +8,7 @@ import config
 from .screen import Screen
 from .paddle import Paddle
 from .ball import Ball
+from .objects import detect_collision
 import break_brick.utils as utils
 
 
@@ -78,8 +79,11 @@ class Game:
                 self._balls.pop(i)
                 self._check_game_over()
 
+            _x_col, _y_col = detect_collision(ball, self._paddle)
+            if _y_col:
+                ball.handle_collision(utils.CollisionDirection.Y)
+
             # check collision with paddle
-            # TODO: collision ball <-> paddle
             # check collision with bricks
             # TODO: collision ball <-> bricks
             pass
@@ -98,5 +102,5 @@ class Game:
             self._draw_objects()
             self._screen.show()
 
-            while time.perf_counter() - start_time < 0.05:  # frame rate
+            while time.perf_counter() - start_time < 1 / config.FRAME_RATE:  # frame rate
                 pass

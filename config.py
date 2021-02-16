@@ -7,7 +7,7 @@ scrh, scrw = map(int, os.popen('stty size', 'r').read().split())
 WIDTH = scrw
 HEIGHT = scrh - 10
 
-FRAME_RATE = 20
+FRAME_RATE = 30
 
 # colors
 BG_COLOR = Back.BLACK
@@ -21,3 +21,7 @@ PADDLE_SPEED = 1
 
 # ball
 Y_BALL_SPEED_NORMAL = 0.5
+
+# collision buffer
+COLLISION_BUFFER = 1
+

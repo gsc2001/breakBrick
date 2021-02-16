@@ -15,26 +15,24 @@ class Ball(AutoMovingObject):
     def __init__(self):
         rep = GameObject.rep_from_str(BALL)
         color = np.array([config.BG_COLOR, colorama.Fore.WHITE + colorama.Style.BRIGHT])
-        pos = np.array([config.WIDTH / 2, config.HEIGHT - 2])
-        super().__init__(rep, pos, color, np.array([0, -config.Y_BALL_SPEED_NORMAL]))
+        pos = np.array([int(config.WIDTH / 2), config.HEIGHT - 4])
+        super().__init__(rep, pos, color, np.array([config.Y_BALL_SPEED_NORMAL, config.Y_BALL_SPEED_NORMAL]))
 
-    def _handle_collision(self, _from: utils.CollisionDirection):
+    def handle_collision(self, _from: utils.CollisionDirection):
         """
         Handle collision from the given direction
         :param _from: the direction from where the ball collided
         """
-        if _from == utils.CollisionDirection.ABOVE:
-            self._velocity[1] = -self._velocity[1]
-            self.set_position(self._pos + np.array([0, 1]))
-        elif _from == utils.CollisionDirection.BELLOW:
-            self._velocity[1] = -self._velocity[1]
-            self.set_position(self._pos + np.array([0, -1]))
-        elif _from == utils.CollisionDirection.LEFT:
-            self._velocity[0] = -self._velocity[0]
-            self.set_position(self._pos + np.array([1, 0]))
-        elif _from == utils.CollisionDirection.RIGHT:
-            self._velocity[0] = -self._velocity[0]
-            self.set_position(self._pos + np.array([-1, 0]))
+        _vel = self.get_velocity()
+        if _from == utils.CollisionDirection.X:
+            self.set_xvelocity(-_vel[0])
+            _vel[1] = 0
+            self.set_position(self._pos + np.sign(-_vel))
+
+        elif _from == utils.CollisionDirection.Y:
+            self.set_yvelocity(-_vel[1])
+            _vel[0] = 0
+            self.set_position(self._pos + np.sign(-_vel))
 
     def handle_wall_collision(self) -> bool:
         """
@@ -42,15 +40,14 @@ class Ball(AutoMovingObject):
         :return: True if ball lost (touched bottom wall)
         """
         ball_died = False
-        _x, _y = self.get_position()
+        _x, _y = map(int, self.get_position())
+        _h, _w = map(int, self.get_shape())
 
-        if _x == 0:
-            self._handle_collision(_from=utils.CollisionDirection.LEFT)
-        if _x == config.WIDTH - 1:
-            self._handle_collision(_from=utils.CollisionDirection.RIGHT)
+        if _x == 0 or _x == config.WIDTH - 1 - _w:
+            self.handle_collision(_from=utils.CollisionDirection.X)
         if _y == 0:
-            self._handle_collision(_from=utils.CollisionDirection.ABOVE)
-        if _y == config.HEIGHT - 1:
+            self.handle_collision(_from=utils.CollisionDirection.Y)
+        if _y == config.HEIGHT - _h:
             # bottom wall touched
             self.destroy()
             ball_died = True

@@ -1,8 +1,16 @@
+from typing import Tuple
+
 import numpy as np
 
 import config
 import break_brick.utils as utils
 
+
+# Bounding Box
+# x0, y0 ----- x1, y0
+# |                 |
+# |                 |
+# x0, y1 ----- x1, y1
 
 class GameObject:
     """
@@ -55,7 +63,7 @@ class GameObject:
         return _color
 
     def get_position(self):
-        return self._pos
+        return self._pos.copy()
 
     def get_shape(self):
         return self._rep.shape
@@ -74,6 +82,12 @@ class GameObject:
     def is_active(self):
         return self._active
 
+    def get_bounding_box(self):
+        """Get bounding box of the object"""
+        _h, _w = self.get_shape()
+        _x, _y = self.get_position()
+
+        return (_x, _x + _w), (_y, _y + _h)
 
 
 class AutoMovingObject(GameObject):
@@ -94,7 +108,6 @@ class AutoMovingObject(GameObject):
         super().__init__(rep, pos, color)
         self._velocity = velocity
 
-
     def update(self):
         """Update the position of a moving object"""
         # if not active just return
@@ -107,7 +120,43 @@ class AutoMovingObject(GameObject):
         Get velocity of the object
         :return: velocity as np.array([vx,vy])
         """
-        return self._velocity
+        return self._velocity.copy()
 
     def set_xvelocity(self, x_velocity):
         self._velocity[0] = x_velocity
+
+    def set_yvelocity(self, y_velocity):
+        self._velocity[1] = y_velocity
+
+
+def detect_collision(obja: GameObject, objb: GameObject):
+    """
+    Detect collision between 2 objects
+    :param obja: 1st object
+    :param objb: 2nd object
+    :return: tuple for x_collision , y_collision
+    """
+
+    (xa0, xa1), (ya0, ya1) = obja.get_bounding_box()
+    (xb0, xb1), (yb0, yb1) = objb.get_bounding_box()
+
+    # basic collision detection using rectangle intersection of with 1 expanded bounding box
+    x_start = max(xb0, xa0)
+    x_end = min(xa1, xb1)
+    y_start = max(ya0 , yb0)
+    y_end = min(ya1 , yb1)
+
+    if x_start > x_end or y_start > y_end:
+        # no collision
+        return False, False
+
+    x_collision = False
+    y_collision = False
+
+    if utils.check_cross_dist(xa0, xa1, xb0, xb1, config.COLLISION_BUFFER):
+        x_collision = True
+
+    if utils.check_cross_dist(ya0, ya1, yb0, yb1, config.COLLISION_BUFFER):
+        y_collision = True
+
+    return x_collision, y_collision
