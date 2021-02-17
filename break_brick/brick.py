@@ -7,7 +7,8 @@ import break_brick.utils as utils
 from .objects import GameObject
 from .graphics import BRICK
 
-colors = list(map(np.array, [[Back.GREEN, Fore.GREEN], [Back.YELLOW, Fore.YELLOW], [Back.RED, Fore.RED]]))
+colors = list(
+    map(np.array, [[Back.GREEN, Fore.GREEN], [Back.YELLOW, Fore.YELLOW], [Back.RED, Fore.RED], [Back.BLUE, Fore.BLUE]]))
 
 
 class Brick(GameObject):
@@ -26,6 +27,7 @@ class Brick(GameObject):
         :param path: the file path to txt file
         :return: list of bricks
         """
+        brick_width = len(BRICK) - 2
         bricks = []
         if not os.path.exists(path):
             raise SystemExit('Brick map not found')
@@ -33,11 +35,12 @@ class Brick(GameObject):
             lines = map_file.readlines()
             if len(lines) != config.BRICK_END_HEIGHT - config.BRICK_START_HEIGHT + 1:
                 raise SystemExit('Invalid brick map. height not matching')
-
             for i, line in enumerate(lines):
                 for j, _dig in enumerate(line.split(',')[:-1]):
-                    if _dig != '0':
-                        bricks.append(Brick(utils.get_arr(j * 6, config.BRICK_START_HEIGHT + i), int(_dig)))
+                    if _dig == '4':
+                        bricks.append(UnbreakableBrick(utils.get_arr(j * brick_width, config.BRICK_START_HEIGHT + i)))
+                    elif _dig != '0':
+                        bricks.append(Brick(utils.get_arr(j * brick_width, config.BRICK_START_HEIGHT + i), int(_dig)))
 
         return bricks
 
@@ -62,3 +65,17 @@ class Brick(GameObject):
         :return: Brick died or not
         """
         return self.hit()
+
+
+class UnbreakableBrick(Brick):
+    """Class for a unbreakable brick"""
+
+    def __init__(self, pos):
+        # temp health to set color
+        health = 4
+        super().__init__(pos, health)
+        self._health = np.inf
+
+    def hit(self):
+        """No need to do anything to the brick"""
+        return False

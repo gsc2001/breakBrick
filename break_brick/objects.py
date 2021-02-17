@@ -157,10 +157,12 @@ def detect_collision(obja: GameObject, objb: GameObject):
     x_collision = False
     y_collision = False
 
+    if utils.check_cross_dist(ya0, ya1, yb0, yb1, config.COLLISION_BUFFER):
+        y_collision = True
+
+    # NOTE: Detection for both as on corner there may be some mishap
     if utils.check_cross_dist(xa0, xa1, xb0, xb1, config.COLLISION_BUFFER):
         x_collision = True
 
-    if utils.check_cross_dist(ya0, ya1, yb0, yb1, config.COLLISION_BUFFER):
-        y_collision = True
 
     return x_collision, y_collision

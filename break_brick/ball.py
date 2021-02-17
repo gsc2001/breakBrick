@@ -65,5 +65,5 @@ class Ball(AutoMovingObject):
         self.set_xvelocity(_x_vel + int(_x - paddle_middle) * config.PADDLE_ACC)
 
     def handle_brick_collision(self, x_collision, y_collision):
-
+        print(x_collision, y_collision)
         self.handle_collision(x_collision, y_collision)
