@@ -45,6 +45,11 @@ class PowerUp(AutoMovingObject):
         if int(_y + _h) == config.HEIGHT - 1:
             self.destroy()
 
+    def __str__(self):
+        if not self._activated:
+            return self.__class__.__name__ + ' Not activated'
+        return self.__class__.__name__ + ' ' + str(self._time_left)
+
 
 class ExpandPaddle(PowerUp):
     """The expand paddle powerup"""
@@ -52,11 +57,27 @@ class ExpandPaddle(PowerUp):
     def __init__(self, pos):
         rep = GameObject.rep_from_str(EXPAND_PADDLE)
         color = np.array(["", Fore.YELLOW + Style.BRIGHT])
-        self._paddle = None
         super().__init__(rep, pos, color)
 
     def activate(self, paddle: Paddle):
         paddle.set_width(config.PADDLE_WIDTH_LONG)
+        super().activate()
+
+    def deactivate(self, paddle: Paddle):
+        paddle.set_width(config.PADDLE_WIDTH_NORMAL)
+        super().deactivate()
+
+
+class ShrinkPaddle(PowerUp):
+    """Shrink paddle powerup"""
+
+    def __init__(self, pos):
+        rep = GameObject.rep_from_str(SHRINK_PADDLE)
+        color = np.array(["", Fore.YELLOW + Style.BRIGHT])
+        super().__init__(rep, pos, color)
+
+    def activate(self, paddle: Paddle):
+        paddle.set_width(config.PADDLE_WIDTH_SHORT)
         super().activate()
 
     def deactivate(self, paddle: Paddle):

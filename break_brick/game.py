@@ -11,7 +11,7 @@ from .paddle import Paddle
 from .ball import Ball
 from .brick import Brick
 from .objects import detect_collision
-from .powerup import ExpandPaddle
+from .powerup import ExpandPaddle, ShrinkPaddle
 import break_brick.utils as utils
 
 
@@ -39,7 +39,7 @@ class Game:
         # self._bricks = [Brick(np.array([config.WIDTH // 2 - 2, config.HEIGHT - 17]), 3)]
         brick_file_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), config.BRICK_MAP_FILE)
         self._bricks = Brick.get_brick_map(brick_file_path)
-        self._power_ups = [ExpandPaddle(self._bricks[0].get_position())]
+        self._power_ups = [ShrinkPaddle(self._bricks[0].get_position())]
         utils.reset_screen()
 
     def _handle_input(self):
@@ -59,14 +59,13 @@ class Game:
             self._keyboard.clear()
 
     def _activate_powerup(self, powerup):
-        if isinstance(powerup, ExpandPaddle):
+        if isinstance(powerup, (ExpandPaddle, ShrinkPaddle)):
             powerup.activate(self._paddle)
         # more powerups here
 
     def _deactivate_powerup(self, powerup):
-        if isinstance(powerup, ExpandPaddle):
+        if isinstance(powerup, (ExpandPaddle, ShrinkPaddle)):
             powerup.deactivate(self._paddle)
-        # more powerups here
 
     def _update_objects(self):
         for ball in self._balls:
@@ -140,6 +139,15 @@ class Game:
             if _x_col or _y_col:
                 self._activate_powerup(powerup)
 
+    def debug_info(self):
+        """Print useful debug info"""
+        print('------------------')
+        print("Paddle: ", self._paddle._rep.shape)
+        print("Powerups")
+        for _powerup in self._power_ups:
+            print(_powerup, '\n')
+        print('-------------------')
+
     def start(self):
         """
         Start the game
@@ -154,7 +162,7 @@ class Game:
             self._clean()
             self._draw_objects()
             self._screen.show()
-            print("Paddle:", self._paddle._rep.shape)
+            self.debug_info()
 
             while time.perf_counter() - start_time < 1 / config.FRAME_RATE:  # frame rate
                 pass

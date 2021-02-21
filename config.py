@@ -1,5 +1,7 @@
 import os
+
 from colorama import Fore, Back, Style
+
 
 # get the terminal screen size
 scrh, scrw = map(int, os.popen('stty size', 'r').read().split())
