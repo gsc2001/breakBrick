@@ -24,6 +24,7 @@ class GameObject:
         self._active = True
         self._rep = rep
         self._color = GameObject.color_mask(rep, color)
+        self._fore_back_color = color
 
     def destroy(self):
         """Destroy the object"""
@@ -65,6 +66,12 @@ class GameObject:
     def set_color(self, color):
         """Change color"""
         self._color = GameObject.color_mask(self._rep, color)
+        self._fore_back_color = color
+
+    def set_rep(self, rep):
+        self._rep = rep
+        self.set_color(self._fore_back_color)
+
 
     def get_position(self):
         return self._pos.copy()

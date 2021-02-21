@@ -28,3 +28,7 @@ class Paddle(GameObject):
         """Get middle of the paddle"""
         return self.get_position()[0] + self._width // 2
 
+    def set_width(self, width: int):
+        """Set the paddle width to `width`"""
+        self._width = width
+        self.set_rep(np.full((1, self._width), "="))
