@@ -11,7 +11,7 @@ from .paddle import Paddle
 from .ball import Ball
 from .brick import Brick
 from .objects import detect_collision
-from .powerup import ExpandPaddle, ShrinkPaddle
+from .powerup import ExpandPaddle, ShrinkPaddle, FastBall
 import break_brick.utils as utils
 
 
@@ -39,7 +39,7 @@ class Game:
         # self._bricks = [Brick(np.array([config.WIDTH // 2 - 2, config.HEIGHT - 17]), 3)]
         brick_file_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), config.BRICK_MAP_FILE)
         self._bricks = Brick.get_brick_map(brick_file_path)
-        self._power_ups = [ShrinkPaddle(self._bricks[0].get_position())]
+        self._power_ups = [FastBall(self._bricks[0].get_position())]
         utils.reset_screen()
 
     def _handle_input(self):
@@ -61,11 +61,15 @@ class Game:
     def _activate_powerup(self, powerup):
         if isinstance(powerup, (ExpandPaddle, ShrinkPaddle)):
             powerup.activate(self._paddle)
+        elif isinstance(powerup, FastBall):
+            powerup.activate(self._balls)
         # more powerups here
 
     def _deactivate_powerup(self, powerup):
         if isinstance(powerup, (ExpandPaddle, ShrinkPaddle)):
             powerup.deactivate(self._paddle)
+        elif isinstance(powerup, FastBall):
+            powerup.deactivate(self._balls)
 
     def _update_objects(self):
         for ball in self._balls:
@@ -134,6 +138,8 @@ class Game:
 
         for i, powerup in enumerate(self._power_ups):
             # check if the powerup has touched the ground
+            if powerup.is_activated():
+                continue
             powerup.handle_wall_collision()
             _x_col, _y_col = detect_collision(self._paddle, powerup)
             if _x_col or _y_col:
@@ -143,6 +149,9 @@ class Game:
         """Print useful debug info"""
         print('------------------')
         print("Paddle: ", self._paddle._rep.shape)
+        print("Balls: ")
+        for ball in self._balls:
+            print("Speed {}".format(ball.get_velocity()))
         print("Powerups")
         for _powerup in self._power_ups:
             print(_powerup, '\n')
