@@ -108,3 +108,26 @@ class FastBall(PowerUp):
             ball.set_yvelocity(_y_vel / config.FAST_BALL_MULTIPLIER)
         super().deactivate()
 
+class BallMultiplier(PowerUp) :
+    """Ball multiplier powerup"""
+    def __init__(self, pos):
+        rep = GameObject.rep_from_str(BALL_MULTIPLIER)
+        color = np.array(["", Fore.YELLOW + Style.BRIGHT])
+        super().__init__(rep, pos, color)
+
+    def reduce_time(self):
+        """This powerup never dies"""
+        return False
+
+    def activate(self, balls: List[Ball]):
+        new_balls = []
+        for ball in balls:
+            vel = ball.get_velocity()
+            new_ball = Ball(ball.get_position(), vel + np.array([-1, 0]))
+            ball.set_xvelocity(vel[0] + 1)
+            new_balls.append(new_ball)
+        super().activate()
+        return new_balls
+
+
+

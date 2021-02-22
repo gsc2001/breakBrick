@@ -11,7 +11,7 @@ from .paddle import Paddle
 from .ball import Ball
 from .brick import Brick
 from .objects import detect_collision
-from .powerup import ExpandPaddle, ShrinkPaddle, FastBall
+from .powerup import ExpandPaddle, ShrinkPaddle, FastBall, BallMultiplier
 import break_brick.utils as utils
 
 
@@ -35,11 +35,11 @@ class Game:
         # For debug
         # self._balls = [Ball(np.array([1, config.HEIGHT - 19]), np.array([config.BALL_SPEED_NORMAL, 0]))]
         # self._balls = []
-        self._balls = [Ball()]
+        self._balls = [Ball(), Ball(vel=np.array([config.BALL_SPEED_NORMAL, config.BALL_SPEED_NORMAL]))]
         # self._bricks = [Brick(np.array([config.WIDTH // 2 - 2, config.HEIGHT - 17]), 3)]
         brick_file_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), config.BRICK_MAP_FILE)
         self._bricks = Brick.get_brick_map(brick_file_path)
-        self._power_ups = [FastBall(self._bricks[0].get_position())]
+        self._power_ups = [BallMultiplier(self._bricks[0].get_position())]
         utils.reset_screen()
 
     def _handle_input(self):
@@ -63,6 +63,9 @@ class Game:
             powerup.activate(self._paddle)
         elif isinstance(powerup, FastBall):
             powerup.activate(self._balls)
+        elif isinstance(powerup, BallMultiplier):
+            new_balls = powerup.activate(self._balls)
+            self._balls.extend(new_balls)
         # more powerups here
 
     def _deactivate_powerup(self, powerup):
@@ -171,7 +174,7 @@ class Game:
             self._clean()
             self._draw_objects()
             self._screen.show()
-            self.debug_info()
+            # self.debug_info()
 
             while time.perf_counter() - start_time < 1 / config.FRAME_RATE:  # frame rate
                 pass
