@@ -105,11 +105,10 @@ class Game:
             powerup.deactivate(self._paddle)
 
     def try_spawn_powerup(self, pos):
-        do_spawn = np.random.random() > 0.0
+        do_spawn = np.random.random() > 1 - config.POWERUP_PROB
 
         if do_spawn:
-            # self._power_ups.append(powerup_options[np.random.randint(0, 6)](pos))
-            self._power_ups.append(ExpandPaddle(pos))
+            self._power_ups.append(powerup_options[np.random.randint(0, 6)](pos))
 
     def _update_objects(self):
         for ball in self._balls:

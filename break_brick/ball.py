@@ -64,9 +64,13 @@ class Ball(AutoMovingObject):
     def handle_paddle_collision(self, paddle_middle, paddle_width):
         """Handle collision with paddle"""
         _x, _y = self.get_position()
-        _x_vel, _ = self.get_velocity()
+        _x_vel, _y_vel = self.get_velocity()
         self.handle_collision(x_collision=False, y_collision=True)
-        self.set_position(np.array([_x, _y - 0.5]))
+        self.set_position(np.array([_x, _y - 1]))
+
+        if abs(_y_vel) < 0.1:
+            self.set_yvelocity(-0.2)
+
         self.set_xvelocity(_x_vel + int(_x - paddle_middle) / paddle_width)
 
     def handle_brick_collision(self, x_collision, y_collision, thru_ball: bool):
