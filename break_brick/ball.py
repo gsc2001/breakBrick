@@ -20,6 +20,9 @@ class Ball(AutoMovingObject):
         if vel is None:
             vel = np.array([0, config.BALL_SPEED_NORMAL])
         # self._thru = False
+        # if the ball is sticked to the paddle
+        self._sticked = False
+        self._stored_velocity = np.array([0.0, 0.0])
         super().__init__(rep, pos, color, vel)
 
     def handle_collision(self, x_collision, y_collision):
@@ -68,6 +71,17 @@ class Ball(AutoMovingObject):
     def handle_brick_collision(self, x_collision, y_collision, thru_ball: bool):
         if not thru_ball:
             self.handle_collision(x_collision, y_collision)
+
+    def stick_to_paddle(self):
+        self._sticked = True
+        self._stored_velocity = self.get_velocity()
+        self.set_xvelocity(0)
+        self.set_yvelocity(0)
+
+    def leave_paddle(self):
+        self._sticked = False
+        self.set_xvelocity(self._stored_velocity[0])
+        self.set_yvelocity(self._stored_velocity[1])
 
     # def set_thru(self, thru: bool):
     #     """Make a ball thru or remove"""

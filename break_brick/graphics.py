@@ -12,6 +12,7 @@ BRICK = r"""
 ======
 """
 
+# power ups
 
 EXPAND_PADDLE = r"""
 *----*
@@ -40,5 +41,11 @@ BALL_MULTIPLIER = r"""
 THRU_BALL = r"""
 *----*
 |O==>| 
+*----*
+"""
+
+PADDLE_GRAB = r"""
+*----*
+| O| | 
 *----*
 """

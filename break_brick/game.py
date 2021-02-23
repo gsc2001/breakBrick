@@ -11,7 +11,7 @@ from .paddle import Paddle
 from .ball import Ball
 from .brick import Brick
 from .objects import detect_collision
-from .powerup import ExpandPaddle, ShrinkPaddle, FastBall, BallMultiplier, ThruBall
+from .powerup import ExpandPaddle, ShrinkPaddle, FastBall, BallMultiplier, ThruBall, PaddleGrab
 import break_brick.utils as utils
 
 
@@ -34,12 +34,12 @@ class Game:
 
         # For debug
         # self._balls = [Ball(np.array([1, config.HEIGHT - 19]), np.array([config.BALL_SPEED_NORMAL, 0]))]
-        self._balls = [Ball()]
-        # self._balls = [Ball(), Ball(vel=np.array([config.BALL_SPEED_NORMAL, config.BALL_SPEED_NORMAL]))]
+        # self._balls = [Ball()]
+        self._balls = [Ball(), Ball(vel=np.array([config.BALL_SPEED_NORMAL, config.BALL_SPEED_NORMAL]))]
         # self._bricks = [Brick(np.array([config.WIDTH // 2 - 2, config.HEIGHT - 17]), 3)]
         brick_file_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), config.BRICK_MAP_FILE)
         self._bricks = Brick.get_brick_map(brick_file_path)
-        self._power_ups = [ThruBall(self._bricks[0].get_position()), BallMultiplier(self._bricks[0].get_position())]
+        self._power_ups = [PaddleGrab(self._bricks[0].get_position())]
         self._thru_balls = False  # variable to signify if the ball are thru or not
         utils.reset_screen()
 
@@ -56,6 +56,8 @@ class Game:
                 self._paddle.move_right()
             elif inp == 'a':
                 self._paddle.move_left()
+            elif inp == ' ':
+                self._paddle.remove_ball()
 
             self._keyboard.clear()
 
@@ -69,6 +71,9 @@ class Game:
             self._balls.extend(new_balls)
         elif isinstance(powerup, ThruBall):
             self._thru_balls = powerup.activate()
+        elif isinstance(powerup, PaddleGrab):
+            powerup.activate(self._paddle)
+
         # more powerups here
 
     def _deactivate_powerup(self, powerup):
@@ -78,6 +83,8 @@ class Game:
             powerup.deactivate(self._balls)
         elif isinstance(powerup, ThruBall):
             self._thru_balls = powerup.deactivate()
+        elif isinstance(powerup, PaddleGrab):
+            powerup.deactivate(self._paddle)
 
     def _update_objects(self):
         for ball in self._balls:
@@ -134,11 +141,13 @@ class Game:
 
             # check collision with paddle
             _x_col, _y_col = detect_collision(ball, self._paddle)
-            if _y_col:
+            if _y_col or _x_col:
                 ball.handle_paddle_collision(self._paddle.get_middle())
+                if self._paddle.is_sticky():
+                    self._paddle.stick_ball(ball)
 
             # check collision with bricks
-            for i, brick in enumerate(self._bricks):
+            for _, brick in enumerate(self._bricks):
                 _x_col, _y_col = detect_collision(ball, brick)
                 if _x_col or _y_col:
                     ball.handle_brick_collision(_x_col, _y_col, self._thru_balls)

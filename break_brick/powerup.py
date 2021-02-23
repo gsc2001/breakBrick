@@ -149,3 +149,20 @@ class ThruBall(PowerUp):
     def deactivate(self, *objs):
         super().deactivate()
         return False  # just need to set _thru_balls variable to False
+
+
+class PaddleGrab(PowerUp):
+    """PaddleGrab Powerup"""
+
+    def __init__(self, pos):
+        rep = GameObject.rep_from_str(PADDLE_GRAB)
+        color = np.array(["", Fore.YELLOW + Style.BRIGHT])
+        super().__init__(rep, pos, color)
+
+    def activate(self, paddle: Paddle):
+        paddle.set_sticky(True)
+        super().activate()
+
+    def deactivate(self, paddle: Paddle):
+        paddle.set_sticky(False)
+        super().deactivate()
