@@ -47,24 +47,28 @@ class Brick(GameObject):
     def _update_color(self):
         self.set_color(colors[self._health - 1])
 
-    def hit(self) -> bool:
+    def hit(self, is_thru: bool) -> bool:
         """
         Brick hit
         :return: Brick died or not
         """
-        self._health -= 1
+        if is_thru:
+            self._health = 0
+        else:
+            self._health -= 1
         if self._health == 0:
             self.destroy()
             return True
         self._update_color()
         return False
 
-    def handle_ball_collision(self) -> bool:
+    def handle_ball_collision(self, is_thru: bool) -> bool:
         """
-        Handle collision with ball
+        Handle brick <-> ball collision w.r.t brick
+        :param is_thru: is ball a thru one
         :return: Brick died or not
         """
-        return self.hit()
+        return self.hit(is_thru)
 
 
 class UnbreakableBrick(Brick):
@@ -76,6 +80,9 @@ class UnbreakableBrick(Brick):
         super().__init__(pos, health)
         self._health = np.inf
 
-    def hit(self):
+    def hit(self, is_thru: bool):
         """No need to do anything to the brick"""
+        if is_thru:
+            self.destroy()
+            return True
         return False

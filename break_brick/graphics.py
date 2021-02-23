@@ -12,10 +12,11 @@ BRICK = r"""
 ======
 """
 
+
 EXPAND_PADDLE = r"""
-*---*
-|<->| 
-*---*
+*----*
+|<-->| 
+*----*
 """
 
 SHRINK_PADDLE = r"""
@@ -33,5 +34,11 @@ FAST_BALL= r"""
 BALL_MULTIPLIER = r"""
 *----*
 |O<>O| 
+*----*
+"""
+
+THRU_BALL = r"""
+*----*
+|O==>| 
 *----*
 """

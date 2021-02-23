@@ -19,6 +19,7 @@ class Ball(AutoMovingObject):
             pos = np.array([int(config.WIDTH / 2), config.HEIGHT - 5])
         if vel is None:
             vel = np.array([0, config.BALL_SPEED_NORMAL])
+        # self._thru = False
         super().__init__(rep, pos, color, vel)
 
     def handle_collision(self, x_collision, y_collision):
@@ -64,5 +65,14 @@ class Ball(AutoMovingObject):
         self.handle_collision(x_collision=False, y_collision=True)
         self.set_xvelocity(_x_vel + int(_x - paddle_middle) * config.PADDLE_ACC)
 
-    def handle_brick_collision(self, x_collision, y_collision):
-        self.handle_collision(x_collision, y_collision)
+    def handle_brick_collision(self, x_collision, y_collision, thru_ball: bool):
+        if not thru_ball:
+            self.handle_collision(x_collision, y_collision)
+
+    # def set_thru(self, thru: bool):
+    #     """Make a ball thru or remove"""
+    #     self._thru = thru
+    #
+    # def is_thru(self) -> bool:
+    #     """Get if ball is thru"""
+    #     return self._thru

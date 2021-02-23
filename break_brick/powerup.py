@@ -87,8 +87,10 @@ class ShrinkPaddle(PowerUp):
         paddle.set_width(config.PADDLE_WIDTH_NORMAL)
         super().deactivate()
 
+
 class FastBall(PowerUp):
     """Fast ball PowerUp"""
+
     def __init__(self, pos):
         rep = GameObject.rep_from_str(FAST_BALL)
         color = np.array(["", Fore.YELLOW + Style.BRIGHT])
@@ -108,8 +110,10 @@ class FastBall(PowerUp):
             ball.set_yvelocity(_y_vel / config.FAST_BALL_MULTIPLIER)
         super().deactivate()
 
-class BallMultiplier(PowerUp) :
+
+class BallMultiplier(PowerUp):
     """Ball multiplier powerup"""
+
     def __init__(self, pos):
         rep = GameObject.rep_from_str(BALL_MULTIPLIER)
         color = np.array(["", Fore.YELLOW + Style.BRIGHT])
@@ -130,4 +134,18 @@ class BallMultiplier(PowerUp) :
         return new_balls
 
 
+class ThruBall(PowerUp):
+    """ThruBall Powerup"""
 
+    def __init__(self, pos):
+        rep = GameObject.rep_from_str(THRU_BALL)
+        color = np.array(["", Fore.YELLOW + Style.BRIGHT])
+        super().__init__(rep, pos, color)
+
+    def activate(self, *objs):
+        super().activate()
+        return True  # just need to set _thru_balls variable to True
+
+    def deactivate(self, *objs):
+        super().deactivate()
+        return False  # just need to set _thru_balls variable to False
