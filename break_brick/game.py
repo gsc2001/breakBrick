@@ -54,7 +54,7 @@ class Game:
         _, _w = self._paddle.get_shape()
         _x_pos = np.random.randint(_paddle_pos[0], _paddle_pos[0] + _w)
 
-        _x_vel = int(_x_pos - _paddle_middle) * config.PADDLE_ACC
+        _x_vel = int(_x_pos - _paddle_middle) / _w
 
         _vel = np.array([_x_vel, -config.BALL_SPEED_NORMAL])
 
@@ -109,7 +109,7 @@ class Game:
 
         if do_spawn:
             # self._power_ups.append(powerup_options[np.random.randint(0, 6)](pos))
-            self._power_ups.append(ThruBall(pos))
+            self._power_ups.append(ExpandPaddle(pos))
 
     def _update_objects(self):
         for ball in self._balls:
@@ -169,7 +169,7 @@ class Game:
             # check collision with paddle
             _x_col, _y_col = detect_collision(ball, self._paddle)
             if _y_col or _x_col:
-                ball.handle_paddle_collision(self._paddle.get_middle())
+                ball.handle_paddle_collision(self._paddle.get_middle(), self._paddle.get_shape()[1])
                 if self._paddle.is_sticky():
                     self._paddle.stick_ball(ball)
 

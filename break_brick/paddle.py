@@ -39,7 +39,7 @@ class Paddle(GameObject):
 
     def set_width(self, width: int):
         """Set the paddle width to `width`"""
-        self._width = width
+        self._width = np.clip(width, config.PADDLE_WIDTH_MIN, config.PADDLE_WIDTH_MAX)
         self.set_rep(np.full((1, self._width), "="))
 
     def set_sticky(self, sticky):

@@ -64,11 +64,13 @@ class ExpandPaddle(PowerUp):
         super().__init__(rep, pos, color)
 
     def activate(self, paddle: Paddle):
-        paddle.set_width(config.PADDLE_WIDTH_LONG)
+        _, _width = paddle.get_shape()
+        paddle.set_width(_width + config.PADDLE_CHANGE_AMT)
         super().activate()
 
     def deactivate(self, paddle: Paddle):
-        paddle.set_width(config.PADDLE_WIDTH_NORMAL)
+        _, _width = paddle.get_shape()
+        paddle.set_width(_width - config.PADDLE_CHANGE_AMT)
         super().deactivate()
 
 
@@ -81,11 +83,13 @@ class ShrinkPaddle(PowerUp):
         super().__init__(rep, pos, color)
 
     def activate(self, paddle: Paddle):
-        paddle.set_width(config.PADDLE_WIDTH_SHORT)
+        _, _width = paddle.get_shape()
+        paddle.set_width(_width + config.PADDLE_CHANGE_AMT)
         super().activate()
 
     def deactivate(self, paddle: Paddle):
-        paddle.set_width(config.PADDLE_WIDTH_NORMAL)
+        _, _width = paddle.get_shape()
+        paddle.set_width(_width - config.PADDLE_CHANGE_AMT)
         super().deactivate()
 
 
