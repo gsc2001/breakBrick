@@ -22,7 +22,7 @@ class Ball(AutoMovingObject):
         # self._thru = False
         # if the ball is sticked to the paddle
         self._sticked = False
-        self._stored_velocity = np.array([0.0, 0.0])
+        self._stored_velocity = vel
         super().__init__(rep, pos, color, vel)
 
     def handle_collision(self, x_collision, y_collision):
@@ -77,6 +77,7 @@ class Ball(AutoMovingObject):
         self._stored_velocity = self.get_velocity()
         self.set_xvelocity(0)
         self.set_yvelocity(0)
+
 
     def leave_paddle(self):
         self._sticked = False
