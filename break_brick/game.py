@@ -9,10 +9,12 @@ import config
 from .screen import Screen
 from .paddle import Paddle
 from .ball import Ball
-from .brick import Brick
+from .brick import Brick, ExplodingBrick
 from .objects import detect_collision
 from .powerup import ExpandPaddle, ShrinkPaddle, FastBall, BallMultiplier, ThruBall, PaddleGrab
 import break_brick.utils as utils
+
+powerup_options = [ExpandPaddle, ShrinkPaddle, FastBall, BallMultiplier, ThruBall, PaddleGrab]
 
 
 class Game:
@@ -42,7 +44,7 @@ class Game:
         # self._bricks = [Brick(np.array([config.WIDTH // 2 - 2, config.HEIGHT - 17]), 3)]
         brick_file_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), config.BRICK_MAP_FILE)
         self._bricks = Brick.get_brick_map(brick_file_path)
-        self._power_ups = [PaddleGrab(self._bricks[0].get_position())]
+        self._power_ups = []
         self._thru_balls = False  # variable to signify if the ball are thru or not
         utils.reset_screen()
 
@@ -92,8 +94,6 @@ class Game:
         elif isinstance(powerup, PaddleGrab):
             powerup.activate(self._paddle)
 
-        # more powerups here
-
     def _deactivate_powerup(self, powerup):
         if isinstance(powerup, (ExpandPaddle, ShrinkPaddle)):
             powerup.deactivate(self._paddle)
@@ -103,6 +103,13 @@ class Game:
             self._thru_balls = powerup.deactivate()
         elif isinstance(powerup, PaddleGrab):
             powerup.deactivate(self._paddle)
+
+    def try_spawn_powerup(self, pos):
+        do_spawn = np.random.random() > 0.0
+
+        if do_spawn:
+            # self._power_ups.append(powerup_options[np.random.randint(0, 6)](pos))
+            self._power_ups.append(ThruBall(pos))
 
     def _update_objects(self):
         for ball in self._balls:
@@ -171,8 +178,11 @@ class Game:
                 _x_col, _y_col = detect_collision(ball, brick)
                 if _x_col or _y_col:
                     ball.handle_brick_collision(_x_col, _y_col, self._thru_balls)
-                    if brick.handle_ball_collision(self._thru_balls):
-                        self._score += config.BRICK_BREAK_SCORE
+                    _tscore = 0
+                    if isinstance(brick, ExplodingBrick):
+                        self._score += brick.handle_ball_collision(self._bricks, self.try_spawn_powerup)
+                    else:
+                        self._score += brick.handle_ball_collision(self._thru_balls, self.try_spawn_powerup)
 
         for i, powerup in enumerate(self._power_ups):
             # check if the powerup has touched the ground

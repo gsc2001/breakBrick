@@ -1,3 +1,5 @@
+from typing import List
+
 from colorama import Back, Fore
 import config
 import numpy as np
@@ -8,7 +10,8 @@ from .objects import GameObject
 from .graphics import BRICK
 
 colors = list(
-    map(np.array, [[Back.GREEN, Fore.GREEN], [Back.YELLOW, Fore.YELLOW], [Back.RED, Fore.RED], [Back.BLUE, Fore.BLUE]]))
+    map(np.array, [[Back.GREEN, Fore.GREEN], [Back.YELLOW, Fore.YELLOW], [Back.RED, Fore.RED], [Back.BLUE, Fore.BLUE],
+                   [Back.CYAN, Fore.CYAN]]))
 
 
 class Brick(GameObject):
@@ -39,6 +42,8 @@ class Brick(GameObject):
                 for j, _dig in enumerate(line.split(',')[:-1]):
                     if _dig == '4':
                         bricks.append(UnbreakableBrick(utils.get_arr(j * brick_width, config.BRICK_START_HEIGHT + i)))
+                    elif _dig == '5':
+                        bricks.append(ExplodingBrick(utils.get_arr(j * brick_width, config.BRICK_START_HEIGHT + i)))
                     elif _dig != '0':
                         bricks.append(Brick(utils.get_arr(j * brick_width, config.BRICK_START_HEIGHT + i), int(_dig)))
 
@@ -47,10 +52,10 @@ class Brick(GameObject):
     def _update_color(self):
         self.set_color(colors[self._health - 1])
 
-    def hit(self, is_thru: bool) -> bool:
+    def hit(self, is_thru: bool, powerup_spawn) -> int:
         """
         Brick hit
-        :return: Brick died or not
+        :return: Score addition
         """
         if is_thru:
             self._health = 0
@@ -58,17 +63,18 @@ class Brick(GameObject):
             self._health -= 1
         if self._health == 0:
             self.destroy()
-            return True
+            powerup_spawn(self.get_position())
+            return config.BRICK_BREAK_SCORE
         self._update_color()
-        return False
+        return 0
 
-    def handle_ball_collision(self, is_thru: bool) -> bool:
+    def handle_ball_collision(self, is_thru: bool, powerup_spawn) -> int:
         """
         Handle brick <-> ball collision w.r.t brick
         :param is_thru: is ball a thru one
-        :return: Brick died or not
+        :return: Score addition
         """
-        return self.hit(is_thru)
+        return self.hit(is_thru, powerup_spawn)
 
 
 class UnbreakableBrick(Brick):
@@ -80,9 +86,47 @@ class UnbreakableBrick(Brick):
         super().__init__(pos, health)
         self._health = np.inf
 
-    def hit(self, is_thru: bool):
+    def hit(self, is_thru: bool, powerup_spawn):
         """No need to do anything to the brick"""
         if is_thru:
             self.destroy()
-            return True
-        return False
+            powerup_spawn(self.get_position())
+            return config.BRICK_BREAK_SCORE
+        return 0
+
+
+class ExplodingBrick(Brick):
+    """Class for an exploding brick"""
+
+    def __init__(self, pos):
+        health = 1
+        super().__init__(pos, health)
+        self.set_color(colors[4])
+
+    def hit(self, bricks: List[Brick], powerup_spawn) -> int:
+        """Exploding brick hit"""
+
+        # Run a dfs to hit bricks in surrounding 8 directions
+        self.destroy()
+        _pos = self.get_position()
+        _h, _w = self.get_shape()
+        affected_pos = [_pos + np.array([-_w, 0]),
+                        _pos + np.array([_w, 0]),
+                        _pos + np.array([_w, _h]),
+                        _pos + np.array([_w, -_h]),
+                        _pos + np.array([-_w, _h]),
+                        _pos + np.array([-_w, -_h]),
+                        _pos + np.array([0, _h]),
+                        _pos + np.array([0, -_h])]
+        score = 0
+        for _brick in bricks:
+            if not _brick.is_active():
+                continue
+            _brick_pos = _brick.get_position()
+            if _brick_pos.tolist() in list(map(list, affected_pos)):
+                if isinstance(_brick, ExplodingBrick):
+                    score += _brick.hit(bricks, powerup_spawn)
+                else:
+                    score += _brick.hit(True, powerup_spawn)
+        powerup_spawn(self.get_position())
+        return score

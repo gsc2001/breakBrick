@@ -1,6 +1,6 @@
 from typing import List
 
-from colorama import Fore, Back, Style
+from colorama import Fore, Style
 import numpy as np
 
 import config
@@ -47,6 +47,7 @@ class PowerUp(AutoMovingObject):
 
         if int(_y + _h) == config.HEIGHT - 1:
             self.destroy()
+
 
     def __str__(self):
         if not self._activated:
