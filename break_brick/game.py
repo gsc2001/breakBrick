@@ -9,7 +9,7 @@ import config
 from .screen import Screen
 from .paddle import Paddle
 from .ball import Ball
-from .brick import Brick, ExplodingBrick, UnbreakableBrick
+from .brick import Brick, ExplodingBrick, UnbreakableBrick, RainbowBrick
 from .objects import detect_collision
 from .powerup import ExpandPaddle, ShrinkPaddle, FastBall, BallMultiplier, ThruBall, PaddleGrab
 import break_brick.utils as utils
@@ -153,6 +153,11 @@ class Game:
     def _update_objects(self):
         for ball in self._balls:
             ball.update()
+
+        rainbow_bricks = filter(lambda _brick: isinstance(_brick, RainbowBrick), self._bricks)
+        for brick in rainbow_bricks:
+            brick.update()
+
         for powerup in self._power_ups:
             if powerup.is_falling():
                 powerup.update()
@@ -263,12 +268,13 @@ class Game:
     def print_game_info(self):
         current_time = time.time()
         print(colorama.Style.RESET_ALL + colorama.Fore.WHITE + colorama.Style.BRIGHT + colorama.Back.BLACK)
+        print(f"Level: {self._current_level}")
         print(f"Lives: {self._lives}")
         print(f"Score: {self._score}")
         print(f"Time: {int(current_time - self._start_time)}")
         time_attack = max(0.0, round(self._level_end_time - current_time, 2))
         if not self._falling_bricks:
-            print(f"Time attack: {time_attack}")
+            print(f"Time attack in {time_attack}")
         else:
             print("Time attack going on!")
         print(colorama.Style.RESET_ALL, end='')

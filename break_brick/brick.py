@@ -42,6 +42,8 @@ class Brick(GameObject):
                         bricks.append(UnbreakableBrick(utils.get_arr(j * brick_width, config.BRICK_START_HEIGHT + i)))
                     elif _dig == '5':
                         bricks.append(ExplodingBrick(utils.get_arr(j * brick_width, config.BRICK_START_HEIGHT + i)))
+                    elif _dig == '6':
+                        bricks.append(RainbowBrick(utils.get_arr(j * brick_width, config.BRICK_START_HEIGHT + i)))
                     elif _dig != '0':
                         bricks.append(Brick(utils.get_arr(j * brick_width, config.BRICK_START_HEIGHT + i), int(_dig)))
 
@@ -128,3 +130,23 @@ class ExplodingBrick(Brick):
                     score += _brick.hit(True, powerup_spawn)
         powerup_spawn(self.get_position())
         return score
+
+
+class RainbowBrick(Brick):
+    def __init__(self, pos):
+        health = 3
+        self._changing = True
+        super().__init__(pos, health)
+
+    def update(self):
+        if not self._changing:
+            return
+        self._health += 1
+        if self._health == 4:
+            self._health = 1
+
+        self._update_color()
+
+    def hit(self, *args) -> int:
+        self._changing = False
+        return super().hit(*args)
