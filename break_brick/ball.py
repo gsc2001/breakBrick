@@ -25,42 +25,6 @@ class Ball(AutoMovingObject):
         self._stored_velocity = vel
         super().__init__(rep, pos, color, vel)
 
-    def handle_collision(self, x_collision, y_collision):
-        """
-        Handle collision
-        :param x_collision: was the collsion in x
-        :param y_collision: was the collision in y
-        :return:
-        """
-        _x_vel, _y_vel = self.get_velocity()
-        if x_collision:
-            self.set_xvelocity(-_x_vel)
-            self.set_position(self._pos + np.array([np.sign(-_x_vel), 0]))
-
-        if y_collision:
-            self.set_yvelocity(-_y_vel)
-            self.set_position(self._pos + np.array([0, np.sign(-_y_vel)]))
-
-    def handle_wall_collision(self) -> bool:
-        """
-        Handle ball collision with wall
-        :return: True if ball lost (touched bottom wall)
-        """
-        ball_died = False
-        _x, _y = map(int, self.get_position())
-        _h, _w = map(int, self.get_shape())
-
-        if _x == 0 or _x == config.WIDTH - 1 - _w:
-            self.handle_collision(x_collision=True, y_collision=False)
-        if _y == 0:
-            self.handle_collision(x_collision=False, y_collision=True)
-        if _y == config.HEIGHT - _h:
-            # bottom wall touched
-            self.destroy()
-            ball_died = True
-
-        return ball_died
-
     def handle_paddle_collision(self, paddle_middle, paddle_width):
         """Handle collision with paddle"""
         _x, _y = self.get_position()

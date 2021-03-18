@@ -146,9 +146,10 @@ class Game:
 
     def try_spawn_powerup(self, pos):
         do_spawn = np.random.random() > 1 - config.POWERUP_PROB
-
+        # do_spawn = True
         if do_spawn:
             self._power_ups.append(powerup_options[np.random.randint(0, 6)](pos))
+            # self._power_ups.append(ShrinkPaddle(pos))
 
     def _update_objects(self):
         for ball in self._balls:

@@ -41,14 +41,6 @@ class PowerUp(AutoMovingObject):
     def is_activated(self):
         return self._activated
 
-    def handle_wall_collision(self):
-        _h, _ = self.get_shape()
-        _, _y = self.get_position()
-
-        if int(_y + _h) == config.HEIGHT - 1:
-            self.destroy()
-
-
     def __str__(self):
         if not self._activated:
             return self.__class__.__name__ + ' Not activated'
@@ -84,12 +76,12 @@ class ShrinkPaddle(PowerUp):
 
     def activate(self, paddle: Paddle):
         _, _width = paddle.get_shape()
-        paddle.set_width(_width + config.PADDLE_CHANGE_AMT)
+        paddle.set_width(_width - config.PADDLE_CHANGE_AMT)
         super().activate()
 
     def deactivate(self, paddle: Paddle):
         _, _width = paddle.get_shape()
-        paddle.set_width(_width - config.PADDLE_CHANGE_AMT)
+        paddle.set_width(_width + config.PADDLE_CHANGE_AMT)
         super().deactivate()
 
 
