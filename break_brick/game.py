@@ -96,6 +96,7 @@ class Game:
                 powerup.destroy()
             else:
                 self._deactivate_powerup(powerup)
+        self._power_ups = []
         self._falling_bricks = False
         self._reset_ball()
 
@@ -148,8 +149,8 @@ class Game:
         # do_spawn = np.random.random() > 1 - config.POWERUP_PROB
         do_spawn = True
         if do_spawn:
-            self._power_ups.append(powerup_options[np.random.randint(0, 6)](pos, vel))
-            # self._power_ups.append(ShrinkPaddle(pos, vel))
+            # self._power_ups.append(powerup_options[np.random.randint(0, 6)](pos, vel))
+            self._power_ups.append(BallMultiplier(pos, vel))
 
     def _update_objects(self):
         for ball in self._balls:

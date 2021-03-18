@@ -55,6 +55,8 @@ class Ball(AutoMovingObject):
         self.set_xvelocity(self._stored_velocity[0])
         self.set_yvelocity(self._stored_velocity[1])
 
+    def is_sticked(self):
+        return self._sticked
     # def set_thru(self, thru: bool):
     #     """Make a ball thru or remove"""
     #     self._thru = thru

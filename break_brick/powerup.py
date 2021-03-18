@@ -128,10 +128,14 @@ class BallMultiplier(PowerUp):
     def activate(self, balls: List[Ball]):
         new_balls = []
         for ball in balls:
-            vel = ball.get_velocity()
-            new_ball = Ball(ball.get_position(), vel + np.array([-1, 0]))
-            ball.set_xvelocity(vel[0] + 1)
-            new_balls.append(new_ball)
+            if ball.is_sticked():
+                new_ball = Ball(ball.get_position(), np.array([1,-1]))
+                new_balls.append(new_ball)
+            else:
+                vel = ball.get_velocity()
+                new_ball = Ball(ball.get_position(), vel + np.array([-1, 0]))
+                ball.set_xvelocity(vel[0] + 1)
+                new_balls.append(new_ball)
         super().activate()
         return new_balls
 
