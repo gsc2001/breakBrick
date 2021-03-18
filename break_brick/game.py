@@ -9,9 +9,10 @@ import config
 from .screen import Screen
 from .paddle import Paddle
 from .ball import Ball
+from .bullet import Bullet
 from .brick import Brick, ExplodingBrick, UnbreakableBrick, RainbowBrick
 from .objects import detect_collision
-from .powerup import ExpandPaddle, ShrinkPaddle, FastBall, BallMultiplier, ThruBall, PaddleGrab
+from .powerup import ExpandPaddle, ShrinkPaddle, FastBall, BallMultiplier, ThruBall, PaddleGrab, ShootingPaddle
 import break_brick.utils as utils
 
 powerup_options = [ExpandPaddle, ShrinkPaddle, FastBall, BallMultiplier, ThruBall, PaddleGrab]
@@ -47,14 +48,17 @@ class Game:
         self._bricks = []
         # TODO: Add a key to skip levels
         self._power_ups = []
+        self._bullets = []
         self._load_level(1)
         self._thru_balls = False  # variable to signify if the ball are thru or not
         self._falling_bricks = False  # To signify if the falling bricks is going on
+        self._shooting_paddle = False
+        self._next_shoot = 0
         utils.reset_screen()
 
     def _reset_ball(self):
         _paddle_pos = self._paddle.get_position()
-        _paddle_middle = self._paddle.get_middle()
+        _paddle_middle, _ = self._paddle.get_middle()
         _, _w = self._paddle.get_shape()
         if config.DEBUG:
             _x_pos = int(_paddle_pos[0] + _w / 2)
@@ -96,7 +100,11 @@ class Game:
                 powerup.destroy()
             else:
                 self._deactivate_powerup(powerup)
+
+        for bullet in self._bullets:
+            bullet.destroy()
         self._power_ups = []
+        self._bullets = []
         self._falling_bricks = False
         self._reset_ball()
 
@@ -128,10 +136,23 @@ class Game:
         elif isinstance(powerup, BallMultiplier):
             new_balls = powerup.activate(self._balls)
             self._balls.extend(new_balls)
-        elif isinstance(powerup, ThruBall):
-            self._thru_balls = powerup.activate()
-        elif isinstance(powerup, PaddleGrab):
-            powerup.activate(self._paddle)
+        else:
+            # powerups which can be applied only once, just extend the time of the prev one
+            existing = list(
+                filter(lambda _powerup: isinstance(_powerup, type(powerup)) and _powerup.is_activated(),
+                       self._power_ups))
+            if len(existing) != 0:
+                if config.DEBUG:
+                    assert len(existing) == 1
+                existing[0].add_time(config.POWERUP_FRAMES)
+                powerup.destroy()
+                return
+            if isinstance(powerup, ThruBall):
+                self._thru_balls = powerup.activate()
+            elif isinstance(powerup, PaddleGrab):
+                powerup.activate(self._paddle)
+            elif isinstance(powerup, ShootingPaddle):
+                self._shooting_paddle = powerup.activate(self._paddle)
 
     def _deactivate_powerup(self, powerup):
         if config.DEBUG:
@@ -144,13 +165,15 @@ class Game:
             self._thru_balls = powerup.deactivate()
         elif isinstance(powerup, PaddleGrab):
             powerup.deactivate(self._paddle)
+        elif isinstance(powerup, ShootingPaddle):
+            self._shooting_paddle = powerup.deactivate(self._paddle)
 
     def try_spawn_powerup(self, pos, vel):
         # do_spawn = np.random.random() > 1 - config.POWERUP_PROB
         do_spawn = True
         if do_spawn:
             # self._power_ups.append(powerup_options[np.random.randint(0, 6)](pos, vel))
-            self._power_ups.append(BallMultiplier(pos, vel))
+            self._power_ups.append(ShootingPaddle(pos, vel))
 
     def _update_objects(self):
         for ball in self._balls:
@@ -159,6 +182,8 @@ class Game:
         rainbow_bricks = filter(lambda _brick: isinstance(_brick, RainbowBrick), self._bricks)
         for brick in rainbow_bricks:
             brick.update()
+        for bullet in self._bullets:
+            bullet.update()
 
         for powerup in self._power_ups:
             if powerup.is_falling():
@@ -180,6 +205,10 @@ class Game:
             if ball.is_active():
                 self._screen.draw(ball)
 
+        for bullet in self._bullets:
+            if bullet.is_active():
+                self._screen.draw(bullet)
+
         for powerup in self._power_ups:
             if powerup.is_falling():
                 self._screen.draw(powerup)
@@ -197,6 +226,10 @@ class Game:
         for i, _brick in enumerate(self._bricks):
             if not _brick.is_active():
                 self._bricks.pop(i)
+
+        for i, _bullet in enumerate(self._bullets):
+            if not _bullet.is_active():
+                self._bullets.pop(i)
 
     def _game_over(self):
         self._playing = False
@@ -241,7 +274,9 @@ class Game:
             # check collision with paddle
             _x_col, _y_col = detect_collision(ball, self._paddle)
             if _y_col or _x_col:
-                ball.handle_paddle_collision(self._paddle.get_middle(), self._paddle.get_shape()[1])
+                ball.handle_paddle_collision(self._paddle.get_middle()[0], self._paddle.get_shape()[1])
+                if self._falling_bricks:
+                    self._fall_bricks()
                 if self._paddle.is_sticky():
                     self._paddle.stick_ball(ball)
 
@@ -250,14 +285,12 @@ class Game:
                 _x_col, _y_col = detect_collision(ball, brick)
                 if _x_col or _y_col:
                     ball_vel = ball.get_velocity()
-                    ball.handle_brick_collision(_x_col, _y_col, self._thru_balls, self._falling_bricks)
+                    ball.handle_brick_collision(_x_col, _y_col, self._thru_balls)
                     _tscore = 0
                     if isinstance(brick, ExplodingBrick):
                         self._score += brick.handle_ball_collision(self._bricks, self.try_spawn_powerup, ball_vel)
                     else:
                         self._score += brick.handle_ball_collision(self._thru_balls, self.try_spawn_powerup, ball_vel)
-                    if self._falling_bricks:
-                        self._fall_bricks()
 
         for i, powerup in enumerate(self._power_ups):
             # check if the powerup has touched the ground
@@ -267,6 +300,27 @@ class Game:
             _x_col, _y_col = detect_collision(self._paddle, powerup)
             if _x_col or _y_col:
                 self._activate_powerup(powerup)
+
+        for bullet in self._bullets:
+            bullet.handle_wall_collision(kill=True)
+            for brick in self._bricks:
+                _x_col, _y_col = detect_collision(bullet, brick)
+                if _x_col or _y_col:
+                    bullet_vel = bullet.get_velocity()
+                    bullet.destroy()
+                    if isinstance(brick, ExplodingBrick):
+                        self._score += brick.handle_ball_collision(self._bricks, self.try_spawn_powerup, bullet_vel)
+                    else:
+                        self._score += brick.handle_ball_collision(self._thru_balls, self.try_spawn_powerup, bullet_vel)
+
+    def _shoot_if_possible(self):
+        if not self._shooting_paddle:
+            return
+        self._next_shoot -= 1
+        if self._next_shoot <= 0:
+            middle = self._paddle.get_middle()
+            self._bullets.append(Bullet(middle + np.array([0, -1])))
+            self._next_shoot = config.BULLET_DELAY_FRAMES
 
     def print_game_info(self):
         current_time = time.time()
@@ -280,6 +334,10 @@ class Game:
             print(f"Time attack in {time_attack}")
         else:
             print("Time attack going on!")
+        if self._shooting_paddle:
+            powerup = list(filter(
+                lambda _pow: isinstance(_pow, ShootingPaddle) and _pow.is_activated(), self._power_ups))[0]
+            print(f'Shooting paddle time left: {round(powerup.get_time() / config.FRAME_RATE, 2)}')
         print(colorama.Style.RESET_ALL, end='')
 
     def debug_info(self):
@@ -303,6 +361,7 @@ class Game:
             start_time = time.perf_counter()
             self._screen.clear()
             self._handle_input()
+            self._shoot_if_possible()
             self._handle_collisions()
             self._update_objects()
             self._clean()

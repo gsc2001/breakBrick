@@ -37,11 +37,8 @@ class Ball(AutoMovingObject):
 
         self.set_xvelocity(_x_vel + int(_x - paddle_middle) / paddle_width)
 
-    def handle_brick_collision(self, x_collision, y_collision, thru_ball: bool, falling_bricks: bool):
+    def handle_brick_collision(self, x_collision, y_collision, thru_ball: bool):
         if not thru_ball:
-            if falling_bricks:
-                x, y = self.get_position()
-                self.set_position(utils.get_arr(x, y + 1))
             self.handle_collision(x_collision, y_collision)
 
     def stick_to_paddle(self):

@@ -17,6 +17,7 @@ class Paddle(GameObject):
 
         self._width = config.PADDLE_WIDTH_NORMAL
         self._sticky = False
+        self._shooting = False
         self._stick_ball = None
 
     def move_left(self):
@@ -35,7 +36,8 @@ class Paddle(GameObject):
 
     def get_middle(self):
         """Get middle of the paddle"""
-        return self.get_position()[0] + self._width // 2
+        _x, _y = self.get_position()
+        return np.array([_x + self._width // 2, _y])
 
     def set_width(self, width: int):
         """Set the paddle width to `width`"""
@@ -59,3 +61,15 @@ class Paddle(GameObject):
             return
         self._stick_ball.leave_paddle()
         self._stick_ball = None
+
+    def shoot_bullets(self):
+        if config.DEBUG:
+            assert not self._shooting
+        self._shooting = True
+        self.set_color(np.array([colorama.Back.RED, colorama.Fore.RED]))
+
+    def stop_shooting(self):
+        if config.DEBUG:
+            assert self._shooting
+        self._shooting = False
+        self.set_color(np.array([colorama.Back.WHITE, colorama.Fore.WHITE]))

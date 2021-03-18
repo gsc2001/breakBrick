@@ -156,7 +156,7 @@ class AutoMovingObject(GameObject):
             self.set_yvelocity(-_y_vel)
             self.set_position(self._pos + np.array([0, np.sign(-_y_vel)]))
 
-    def handle_wall_collision(self):
+    def handle_wall_collision(self, kill=False):
         """
         Handle collision with wall
         """
@@ -164,9 +164,15 @@ class AutoMovingObject(GameObject):
         _h, _w = self.get_shape()
 
         if _x <= config.COLLISION_BUFFER or _x + _w + config.COLLISION_BUFFER >= config.WIDTH:
-            self.handle_collision(x_collision=True, y_collision=False)
+            if kill:
+                self.destroy()
+            else:
+                self.handle_collision(x_collision=True, y_collision=False)
         if _y <= config.COLLISION_BUFFER:
-            self.handle_collision(x_collision=False, y_collision=True)
+            if kill:
+                self.destroy()
+            else:
+                self.handle_collision(x_collision=False, y_collision=True)
         if _y + _h + config.COLLISION_BUFFER >= config.HEIGHT:
             # bottom wall touched
             self.destroy()

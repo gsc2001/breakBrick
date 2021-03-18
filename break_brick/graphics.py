@@ -45,7 +45,17 @@ THRU_BALL = r"""
 """
 
 PADDLE_GRAB = r"""
-*----*aaa
+*----*
 | O| | 
 *----*
+"""
+
+SHOOTING_PADDLE = r"""
+*----*
+|^==^| 
+*----*
+"""
+
+BULLET = r"""
+^
 """

@@ -46,6 +46,12 @@ class PowerUp(AutoMovingObject):
         self.set_yvelocity(_y_vel + config.GRAVITY)
         super().update()
 
+    def add_time(self, time):
+        self._time_left += time
+
+    def get_time(self):
+        return self._time_left
+
     def __str__(self):
         if not self._activated:
             return self.__class__.__name__ + ' Not activated'
@@ -129,7 +135,7 @@ class BallMultiplier(PowerUp):
         new_balls = []
         for ball in balls:
             if ball.is_sticked():
-                new_ball = Ball(ball.get_position(), np.array([1,-1]))
+                new_ball = Ball(ball.get_position(), np.array([1, -1]))
                 new_balls.append(new_ball)
             else:
                 vel = ball.get_velocity()
@@ -172,3 +178,22 @@ class PaddleGrab(PowerUp):
     def deactivate(self, paddle: Paddle):
         paddle.set_sticky(False)
         super().deactivate()
+
+
+class ShootingPaddle(PowerUp):
+    """Shooting paddle powerup"""
+
+    def __init__(self, pos, *args):
+        rep = GameObject.rep_from_str(SHOOTING_PADDLE)
+        color = np.array(["", Fore.YELLOW + Style.BRIGHT])
+        super().__init__(rep, pos, color, *args)
+
+    def activate(self, paddle: Paddle):
+        paddle.shoot_bullets()
+        super().activate()
+        return True
+
+    def deactivate(self, paddle: Paddle):
+        paddle.stop_shooting()
+        super().deactivate()
+        return False
