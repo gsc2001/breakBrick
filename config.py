@@ -5,9 +5,10 @@ from colorama import Fore, Back, Style
 # get the terminal screen size
 scrh, scrw = map(int, os.popen('stty size', 'r').read().split())
 
+# TODO: Change this to false before submitting
 DEBUG = True
 
-BOSS_LEVEL = 3  # this is same as number of levels as the boss level is the last level
+BOSS_LEVEL = 2  # this is same as number of levels as the boss level is the last level
 
 PADDLE_SPEED = 1
 
@@ -34,8 +35,7 @@ FAST_BALL_MULTIPLIER = 1.2
 COLLISION_BUFFER = 1
 
 # brick
-BRICK_START_HEIGHT = 0
-BRICK_END_HEIGHT = 11
+BRICK_START_HEIGHT = 20
 BRICK_MAP_DIR = 'levels'
 BRICK_WIDTH = 6
 BRICK_BREAK_SCORE = 100

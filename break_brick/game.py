@@ -44,9 +44,9 @@ class Game:
         self._reset_ball()
         # self._bricks = [Brick(np.array([config.WIDTH // 2 - 2, config.HEIGHT - 17]), 3)]
         self._bricks = []
-        self._load_level(1)
         # TODO: Add a key to skip levels
         self._power_ups = []
+        self._load_level(1)
         self._thru_balls = False  # variable to signify if the ball are thru or not
         utils.reset_screen()
 
@@ -54,7 +54,10 @@ class Game:
         _paddle_pos = self._paddle.get_position()
         _paddle_middle = self._paddle.get_middle()
         _, _w = self._paddle.get_shape()
-        _x_pos = np.random.randint(_paddle_pos[0], _paddle_pos[0] + _w)
+        if config.DEBUG:
+            _x_pos = int(_paddle_pos[0] + _w / 2)
+        else:
+            _x_pos = np.random.randint(_paddle_pos[0], _paddle_pos[0] + _w)
 
         _x_vel = int(_x_pos - _paddle_middle) / _w
 

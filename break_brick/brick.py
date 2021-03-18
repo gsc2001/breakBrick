@@ -36,8 +36,6 @@ class Brick(GameObject):
             raise SystemExit('Brick map not found')
         with open(path) as map_file:
             lines = map_file.readlines()
-            if len(lines) != config.BRICK_END_HEIGHT - config.BRICK_START_HEIGHT + 1:
-                raise SystemExit('Invalid brick map. height not matching')
             for i, line in enumerate(lines):
                 for j, _dig in enumerate(line.split(',')[:-1]):
                     if _dig == '4':
