@@ -9,7 +9,7 @@ import config
 from .screen import Screen
 from .paddle import Paddle
 from .ball import Ball
-from .brick import Brick, ExplodingBrick
+from .brick import Brick, ExplodingBrick, UnbreakableBrick
 from .objects import detect_collision
 from .powerup import ExpandPaddle, ShrinkPaddle, FastBall, BallMultiplier, ThruBall, PaddleGrab
 import break_brick.utils as utils
@@ -35,6 +35,7 @@ class Game:
         self._paddle = Paddle()
         self._lives = 3
         self._score = 0
+        self._current_level = 1
         self._start_time = time.time()
 
         # For debug
@@ -42,8 +43,9 @@ class Game:
         self._balls = []
         self._reset_ball()
         # self._bricks = [Brick(np.array([config.WIDTH // 2 - 2, config.HEIGHT - 17]), 3)]
-        brick_file_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), config.BRICK_MAP_FILE)
-        self._bricks = Brick.get_brick_map(brick_file_path)
+        self._bricks = []
+        self._load_level(1)
+        # TODO: Add a key to skip levels
         self._power_ups = []
         self._thru_balls = False  # variable to signify if the ball are thru or not
         utils.reset_screen()
@@ -62,6 +64,33 @@ class Game:
 
         self._balls = [ball]
         self._paddle.stick_ball(self._balls[0])
+
+    def _increase_level(self):
+        if self._current_level == config.BOSS_LEVEL:
+            # GAME Finished
+            self._playing = False
+            return
+
+        self._load_level(self._current_level + 1)
+
+    def _load_level(self, level: int):
+        self._current_level = level
+        if config.DEBUG:
+            assert 1 <= self._current_level <= config.BOSS_LEVEL
+
+        file_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), config.BRICK_MAP_DIR,
+                                 f'level_{self._current_level}.txt')
+        self._bricks = Brick.get_brick_map(file_path)
+
+        # Remove all powerups
+        for powerup in self._power_ups:
+            if not powerup.is_active():
+                continue
+            if not powerup.is_activated():
+                powerup.destroy()
+            else:
+                self._deactivate_powerup(powerup)
+        self._reset_ball()
 
     def _handle_input(self):
         """
@@ -82,6 +111,8 @@ class Game:
             self._keyboard.clear()
 
     def _activate_powerup(self, powerup):
+        if config.DEBUG:
+            assert not powerup.is_activated(), f'[ERROR] Powerup activating again type: {type(powerup)}'
         if isinstance(powerup, (ExpandPaddle, ShrinkPaddle)):
             powerup.activate(self._paddle)
         elif isinstance(powerup, FastBall):
@@ -95,6 +126,8 @@ class Game:
             powerup.activate(self._paddle)
 
     def _deactivate_powerup(self, powerup):
+        if config.DEBUG:
+            assert powerup.is_activated(), f"[ERROR] Powerup deactivate without activate type: {type(powerup)}"
         if isinstance(powerup, (ExpandPaddle, ShrinkPaddle)):
             powerup.deactivate(self._paddle)
         elif isinstance(powerup, FastBall):
@@ -157,6 +190,11 @@ class Game:
             self._reset_ball()
             if self._lives == 0:
                 self._playing = False
+
+    def _check_level_change(self):
+        breakable_bricks = list(filter(lambda brick: not isinstance(brick, UnbreakableBrick), self._bricks))
+        if len(breakable_bricks) == 0:
+            self._increase_level()
 
     def _handle_collisions(self):
         """Handle collision of objects"""
@@ -224,6 +262,7 @@ class Game:
             self._update_objects()
             self._clean()
             self._check_live_end()
+            self._check_level_change()
             self.print_game_info()
             self._draw_objects()
             self._screen.show()
