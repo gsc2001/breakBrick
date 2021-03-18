@@ -36,6 +36,7 @@ class Game:
         self._lives = 3
         self._score = 0
         self._current_level = 1
+        self._level_end_time = time.time() + config.FALLING_BRICK_TIME
         self._start_time = time.time()
 
         # For debug
@@ -48,6 +49,7 @@ class Game:
         self._power_ups = []
         self._load_level(1)
         self._thru_balls = False  # variable to signify if the ball are thru or not
+        self._falling_bricks = False  # To signify if the falling bricks is going on
         utils.reset_screen()
 
     def _reset_ball(self):
@@ -70,17 +72,18 @@ class Game:
 
     def _increase_level(self):
         if self._current_level == config.BOSS_LEVEL:
-            # GAME Finished
-            self._playing = False
+            # GAME WON
+            self._game_over()
             return
 
         self._load_level(self._current_level + 1)
 
     def _load_level(self, level: int):
-        self._current_level = level
         if config.DEBUG:
-            assert 1 <= self._current_level <= config.BOSS_LEVEL
+            assert 1 <= level <= config.BOSS_LEVEL
 
+        self._current_level = level
+        self._level_end_time = time.time() + config.FALLING_BRICK_TIME
         file_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), config.BRICK_MAP_DIR,
                                  f'level_{self._current_level}.txt')
         self._bricks = Brick.get_brick_map(file_path)
@@ -93,6 +96,7 @@ class Game:
                 powerup.destroy()
             else:
                 self._deactivate_powerup(powerup)
+        self._falling_bricks = False
         self._reset_ball()
 
     def _handle_input(self):
@@ -187,17 +191,38 @@ class Game:
             if not _brick.is_active():
                 self._bricks.pop(i)
 
+    def _game_over(self):
+        self._playing = False
+
     def _check_live_end(self):
         if len(list(filter(lambda ball: ball.is_active(), self._balls))) == 0:
             self._lives -= 1
             self._reset_ball()
             if self._lives == 0:
-                self._playing = False
+                self._game_over()
 
     def _check_level_change(self):
         breakable_bricks = list(filter(lambda brick: not isinstance(brick, UnbreakableBrick), self._bricks))
         if len(breakable_bricks) == 0:
             self._increase_level()
+
+    def _check_falling_start(self):
+        if time.time() >= self._level_end_time:
+            self._falling_bricks = True
+
+    def _fall_bricks(self):
+        _, paddle_y = self._paddle.get_position()
+
+        for brick in self._bricks:
+            if not brick.is_active():
+                continue
+            x, y = brick.get_position()
+            h, _ = brick.get_shape()
+            if paddle_y - (y + 1 + h) == 0:
+                # GAME OVER
+                self._game_over()
+                return
+            brick.set_position(np.array([x, y + 1]))
 
     def _handle_collisions(self):
         """Handle collision of objects"""
@@ -217,12 +242,14 @@ class Game:
             for _, brick in enumerate(self._bricks):
                 _x_col, _y_col = detect_collision(ball, brick)
                 if _x_col or _y_col:
-                    ball.handle_brick_collision(_x_col, _y_col, self._thru_balls)
+                    ball.handle_brick_collision(_x_col, _y_col, self._thru_balls, self._falling_bricks)
                     _tscore = 0
                     if isinstance(brick, ExplodingBrick):
                         self._score += brick.handle_ball_collision(self._bricks, self.try_spawn_powerup)
                     else:
                         self._score += brick.handle_ball_collision(self._thru_balls, self.try_spawn_powerup)
+                    if self._falling_bricks:
+                        self._fall_bricks()
 
         for i, powerup in enumerate(self._power_ups):
             # check if the powerup has touched the ground
@@ -234,10 +261,16 @@ class Game:
                 self._activate_powerup(powerup)
 
     def print_game_info(self):
+        current_time = time.time()
         print(colorama.Style.RESET_ALL + colorama.Fore.WHITE + colorama.Style.BRIGHT + colorama.Back.BLACK)
         print(f"Lives: {self._lives}")
         print(f"Score: {self._score}")
-        print(f"Time: {int(time.time() - self._start_time)}")
+        print(f"Time: {int(current_time - self._start_time)}")
+        time_attack = max(0.0, round(self._level_end_time - current_time, 2))
+        if not self._falling_bricks:
+            print(f"Time attack: {time_attack}")
+        else:
+            print("Time attack going on!")
         print(colorama.Style.RESET_ALL, end='')
 
     def debug_info(self):
@@ -266,6 +299,7 @@ class Game:
             self._clean()
             self._check_live_end()
             self._check_level_change()
+            self._check_falling_start()
             self.print_game_info()
             self._draw_objects()
             self._screen.show()
