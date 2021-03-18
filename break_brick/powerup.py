@@ -13,8 +13,8 @@ from .paddle import Paddle
 class PowerUp(AutoMovingObject):
     """Base class for all the power ups"""
 
-    def __init__(self, rep, pos, color):
-        super().__init__(rep, pos, color, np.array([0, config.POWERUP_SPEED]))
+    def __init__(self, rep, pos, color, vel=np.array([0, config.POWERUP_SPEED])):
+        super().__init__(rep, pos, color, vel)
         self._time_left = config.POWERUP_FRAMES
         self._activated = False
 
@@ -41,6 +41,11 @@ class PowerUp(AutoMovingObject):
     def is_activated(self):
         return self._activated
 
+    def update(self):
+        _, _y_vel = self.get_velocity()
+        self.set_yvelocity(_y_vel + config.GRAVITY)
+        super().update()
+
     def __str__(self):
         if not self._activated:
             return self.__class__.__name__ + ' Not activated'
@@ -50,10 +55,10 @@ class PowerUp(AutoMovingObject):
 class ExpandPaddle(PowerUp):
     """The expand paddle powerup"""
 
-    def __init__(self, pos):
+    def __init__(self, pos, *args):
         rep = GameObject.rep_from_str(EXPAND_PADDLE)
         color = np.array(["", Fore.YELLOW + Style.BRIGHT])
-        super().__init__(rep, pos, color)
+        super().__init__(rep, pos, color, *args)
 
     def activate(self, paddle: Paddle):
         _, _width = paddle.get_shape()
@@ -69,10 +74,10 @@ class ExpandPaddle(PowerUp):
 class ShrinkPaddle(PowerUp):
     """Shrink paddle powerup"""
 
-    def __init__(self, pos):
+    def __init__(self, pos, *args):
         rep = GameObject.rep_from_str(SHRINK_PADDLE)
         color = np.array(["", Fore.YELLOW + Style.BRIGHT])
-        super().__init__(rep, pos, color)
+        super().__init__(rep, pos, color, *args)
 
     def activate(self, paddle: Paddle):
         _, _width = paddle.get_shape()
@@ -88,10 +93,10 @@ class ShrinkPaddle(PowerUp):
 class FastBall(PowerUp):
     """Fast ball PowerUp"""
 
-    def __init__(self, pos):
+    def __init__(self, pos, *args):
         rep = GameObject.rep_from_str(FAST_BALL)
         color = np.array(["", Fore.YELLOW + Style.BRIGHT])
-        super().__init__(rep, pos, color)
+        super().__init__(rep, pos, color, *args)
 
     def activate(self, balls: List[Ball]):
         for ball in balls:
@@ -111,10 +116,10 @@ class FastBall(PowerUp):
 class BallMultiplier(PowerUp):
     """Ball multiplier powerup"""
 
-    def __init__(self, pos):
+    def __init__(self, pos, *args):
         rep = GameObject.rep_from_str(BALL_MULTIPLIER)
         color = np.array(["", Fore.YELLOW + Style.BRIGHT])
-        super().__init__(rep, pos, color)
+        super().__init__(rep, pos, color, *args)
 
     def reduce_time(self):
         """This powerup never dies"""
@@ -134,10 +139,10 @@ class BallMultiplier(PowerUp):
 class ThruBall(PowerUp):
     """ThruBall Powerup"""
 
-    def __init__(self, pos):
+    def __init__(self, pos, *args):
         rep = GameObject.rep_from_str(THRU_BALL)
         color = np.array(["", Fore.YELLOW + Style.BRIGHT])
-        super().__init__(rep, pos, color)
+        super().__init__(rep, pos, color, *args)
 
     def activate(self, *objs):
         super().activate()
@@ -151,10 +156,10 @@ class ThruBall(PowerUp):
 class PaddleGrab(PowerUp):
     """PaddleGrab Powerup"""
 
-    def __init__(self, pos):
+    def __init__(self, pos, *args):
         rep = GameObject.rep_from_str(PADDLE_GRAB)
         color = np.array(["", Fore.YELLOW + Style.BRIGHT])
-        super().__init__(rep, pos, color)
+        super().__init__(rep, pos, color, *args)
 
     def activate(self, paddle: Paddle):
         paddle.set_sticky(True)

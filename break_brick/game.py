@@ -144,12 +144,12 @@ class Game:
         elif isinstance(powerup, PaddleGrab):
             powerup.deactivate(self._paddle)
 
-    def try_spawn_powerup(self, pos):
-        do_spawn = np.random.random() > 1 - config.POWERUP_PROB
-        # do_spawn = True
+    def try_spawn_powerup(self, pos, vel):
+        # do_spawn = np.random.random() > 1 - config.POWERUP_PROB
+        do_spawn = True
         if do_spawn:
-            self._power_ups.append(powerup_options[np.random.randint(0, 6)](pos))
-            # self._power_ups.append(ShrinkPaddle(pos))
+            self._power_ups.append(powerup_options[np.random.randint(0, 6)](pos, vel))
+            # self._power_ups.append(ShrinkPaddle(pos, vel))
 
     def _update_objects(self):
         for ball in self._balls:
@@ -248,12 +248,13 @@ class Game:
             for _, brick in enumerate(self._bricks):
                 _x_col, _y_col = detect_collision(ball, brick)
                 if _x_col or _y_col:
+                    ball_vel = ball.get_velocity()
                     ball.handle_brick_collision(_x_col, _y_col, self._thru_balls, self._falling_bricks)
                     _tscore = 0
                     if isinstance(brick, ExplodingBrick):
-                        self._score += brick.handle_ball_collision(self._bricks, self.try_spawn_powerup)
+                        self._score += brick.handle_ball_collision(self._bricks, self.try_spawn_powerup, ball_vel)
                     else:
-                        self._score += brick.handle_ball_collision(self._thru_balls, self.try_spawn_powerup)
+                        self._score += brick.handle_ball_collision(self._thru_balls, self.try_spawn_powerup, ball_vel)
                     if self._falling_bricks:
                         self._fall_bricks()
 

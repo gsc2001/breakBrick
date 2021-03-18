@@ -45,7 +45,7 @@ THRU_BALL = r"""
 """
 
 PADDLE_GRAB = r"""
-*----*
+*----*aaa
 | O| | 
 *----*
 """

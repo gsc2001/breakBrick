@@ -52,7 +52,7 @@ class Brick(GameObject):
     def _update_color(self):
         self.set_color(colors[self._health - 1])
 
-    def hit(self, is_thru: bool, powerup_spawn) -> int:
+    def hit(self, is_thru: bool, powerup_spawn, ball_vel) -> int:
         """
         Brick hit
         :return: Score addition
@@ -63,18 +63,20 @@ class Brick(GameObject):
             self._health -= 1
         if self._health == 0:
             self.destroy()
-            powerup_spawn(self.get_position())
+            powerup_spawn(self.get_position(), ball_vel)
             return config.BRICK_BREAK_SCORE
         self._update_color()
         return 0
 
-    def handle_ball_collision(self, is_thru: bool, powerup_spawn) -> int:
+    def handle_ball_collision(self, is_thru: bool, powerup_spawn, ball_vel) -> int:
         """
         Handle brick <-> ball collision w.r.t brick
+        :param ball_vel: velocity of the ball
+        :param powerup_spawn: function to spawn power up if brick breaks
         :param is_thru: is ball a thru one
         :return: Score addition
         """
-        return self.hit(is_thru, powerup_spawn)
+        return self.hit(is_thru, powerup_spawn, ball_vel)
 
 
 class UnbreakableBrick(Brick):
@@ -86,11 +88,11 @@ class UnbreakableBrick(Brick):
         super().__init__(pos, health)
         self._health = np.inf
 
-    def hit(self, is_thru: bool, powerup_spawn):
+    def hit(self, is_thru: bool, powerup_spawn, ball_vel):
         """No need to do anything to the brick"""
         if is_thru:
             self.destroy()
-            powerup_spawn(self.get_position())
+            powerup_spawn(self.get_position(), ball_vel)
             return config.BRICK_BREAK_SCORE
         return 0
 
@@ -103,7 +105,7 @@ class ExplodingBrick(Brick):
         super().__init__(pos, health)
         self.set_color(colors[4])
 
-    def hit(self, bricks: List[Brick], powerup_spawn) -> int:
+    def hit(self, bricks: List[Brick], powerup_spawn, ball_vel) -> int:
         """Exploding brick hit"""
 
         # Run a dfs to hit bricks in surrounding 8 directions
@@ -125,10 +127,10 @@ class ExplodingBrick(Brick):
             _brick_pos = _brick.get_position()
             if _brick_pos.tolist() in list(map(list, affected_pos)):
                 if isinstance(_brick, ExplodingBrick):
-                    score += _brick.hit(bricks, powerup_spawn)
+                    score += _brick.hit(bricks, powerup_spawn, ball_vel)
                 else:
-                    score += _brick.hit(True, powerup_spawn)
-        powerup_spawn(self.get_position())
+                    score += _brick.hit(True, powerup_spawn, ball_vel)
+        powerup_spawn(self.get_position(), ball_vel)
         return score
 
 

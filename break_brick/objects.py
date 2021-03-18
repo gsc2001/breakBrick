@@ -81,13 +81,15 @@ class GameObject:
     def get_rep(self):
         return self._rep, self._color
 
-    def set_position(self, new_pos: np.ndarray):
+    def set_position(self, new_pos: np.ndarray)->bool:
         """
         Set the position to new position
         :param new_pos: the new position
+        :return: if the new pos is equal to the position said (not if the position was out of screen)
         """
         _h, _w = self.get_shape()
-        self._pos = np.clip(new_pos, 0, [config.WIDTH - 1 - _w, config.WIDTH - 1 - _h])
+        self._pos = np.clip(new_pos, 0, [config.WIDTH - 1 - _w, config.HEIGHT - 1 - _h])
+        return np.all(self._pos == new_pos)
 
     def is_active(self):
         return self._active
@@ -158,14 +160,14 @@ class AutoMovingObject(GameObject):
         """
         Handle collision with wall
         """
-        _x, _y = map(int, self.get_position())
-        _h, _w = map(int, self.get_shape())
+        _x, _y = self.get_position()
+        _h, _w = self.get_shape()
 
-        if _x == 0 or _x == config.WIDTH - 1 - _w:
+        if _x <= config.COLLISION_BUFFER or _x + _w + config.COLLISION_BUFFER >= config.WIDTH:
             self.handle_collision(x_collision=True, y_collision=False)
-        if _y == 0:
+        if _y <= config.COLLISION_BUFFER:
             self.handle_collision(x_collision=False, y_collision=True)
-        if _y == config.HEIGHT - _h:
+        if _y + _h + config.COLLISION_BUFFER >= config.HEIGHT:
             # bottom wall touched
             self.destroy()
 

@@ -21,15 +21,15 @@ class Paddle(GameObject):
 
     def move_left(self):
         """Move paddle to left"""
-        self.set_position(self.get_position() - [config.PADDLE_SPEED, 0])
-        if self._stick_ball is not None:
+        set = self.set_position(self.get_position() - [config.PADDLE_SPEED, 0])
+        if self._stick_ball is not None and set:
             _pos = self._stick_ball.get_position()
             self._stick_ball.set_position(_pos - [config.PADDLE_SPEED, 0])
 
     def move_right(self):
         """Move paddle to right"""
-        self.set_position(self.get_position() + [config.PADDLE_SPEED, 0])
-        if self._stick_ball is not None:
+        set = self.set_position(self.get_position() + [config.PADDLE_SPEED, 0])
+        if self._stick_ball is not None and set:
             _pos = self._stick_ball.get_position()
             self._stick_ball.set_position(_pos + [config.PADDLE_SPEED, 0])
 

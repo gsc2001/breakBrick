@@ -10,7 +10,8 @@ DEBUG = True
 
 BOSS_LEVEL = 2  # this is same as number of levels as the boss level is the last level
 
-PADDLE_SPEED = 1
+
+GRAVITY = 0.08
 
 HEIGHT = scrh - 10
 WIDTH = scrw
@@ -26,6 +27,7 @@ PADDLE_WIDTH_NORMAL = 17
 PADDLE_WIDTH_MAX = 31
 PADDLE_WIDTH_MIN = 15
 PADDLE_CHANGE_AMT = 2
+PADDLE_SPEED = 1
 
 # ball
 BALL_SPEED_NORMAL = 1
@@ -35,7 +37,7 @@ FAST_BALL_MULTIPLIER = 1.2
 COLLISION_BUFFER = 1
 
 # brick
-BRICK_START_HEIGHT = 34
+BRICK_START_HEIGHT = 30
 BRICK_MAP_DIR = 'levels'
 BRICK_WIDTH = 6
 BRICK_BREAK_SCORE = 100
