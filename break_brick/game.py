@@ -31,6 +31,9 @@ class Game:
         colorama.init()
         # clear the screen
         print("\033[?25l\033[2J", end='')
+        if config.HEIGHT < 30 or config.WIDTH < 100:
+            raise SystemExit("Small Window")
+
         self._playing = True
         self._keyboard = utils.KBHit()
         self._screen = Screen()
