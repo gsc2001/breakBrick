@@ -110,10 +110,6 @@ class Game:
         self._bricks = Brick.get_brick_map(file_path)
 
         # Remove all powerups
-        with open('logs', 'w') as f:
-            f.write(f'{self._current_level}\n')
-            for powerup in self._power_ups:
-                f.write(f'{powerup.is_activated()}, {powerup.is_active()}, {powerup}, {id(powerup)}\n')
 
         for powerup in self._power_ups:
             if not powerup.is_active():
@@ -201,16 +197,9 @@ class Game:
             self._balls.extend(new_balls)
         else:
             # powerups which can be applied only once, just extend the time of the prev one
-            f = open('logs2', 'a')
-            f.write('\n\n---\n')
-            f.write(f'level: {self._current_level}\n')
-            f.write(f'powerups: {self._power_ups}\n')
-            f.write((f'powerup: {powerup.is_active()}'))
-
             existing = list(
                 filter(lambda _powerup: isinstance(_powerup, type(powerup)) and _powerup.is_activated(),
                        self._power_ups))
-            f.write(f'existing: {existing}\n')
             if len(existing) != 0:
                 if config.DEBUG:
                     assert len(existing) == 1
@@ -224,11 +213,6 @@ class Game:
             elif isinstance(powerup, ShootingPaddle):
                 self._shooting_paddle = powerup.activate(self._paddle)
 
-            existing = list(
-                filter(lambda _powerup: isinstance(_powerup, type(powerup)) and _powerup.is_activated(),
-                       self._power_ups))
-            f.write(f'new existing: {existing[0].is_activated()}\n')
-            f.close()
 
     def _deactivate_powerup(self, powerup):
         if config.DEBUG:

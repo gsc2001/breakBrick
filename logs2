@@ -291,3 +291,28 @@ powerup: Trueexisting: [<break_brick.powerup.ShootingPaddle object at 0x7f939836
 level: 2
 powerups: [<break_brick.powerup.ShootingPaddle object at 0x7f93983628e0>, <break_brick.powerup.ShootingPaddle object at 0x7f939837b760>]
 powerup: Trueexisting: [<break_brick.powerup.ShootingPaddle object at 0x7f93983628e0>]
+
+
+---
+level: 1
+powerups: [<break_brick.powerup.ShootingPaddle object at 0x7fc41e2f98e0>]
+powerup: Trueexisting: []
+new existing: True
+
+
+---
+level: 1
+powerups: [<break_brick.powerup.ShootingPaddle object at 0x7fc41e2f98e0>, <break_brick.powerup.ShootingPaddle object at 0x7fc41e2f9b20>, <break_brick.powerup.ShootingPaddle object at 0x7fc41e2f9910>, <break_brick.powerup.ShootingPaddle object at 0x7fc41e2f9a00>]
+powerup: Trueexisting: [<break_brick.powerup.ShootingPaddle object at 0x7fc41e2f98e0>]
+
+
+---
+level: 1
+powerups: [<break_brick.powerup.ShootingPaddle object at 0x7fc41e2f98e0>, <break_brick.powerup.ShootingPaddle object at 0x7fc41e2f9910>, <break_brick.powerup.ShootingPaddle object at 0x7fc41e2f9a00>]
+powerup: Trueexisting: [<break_brick.powerup.ShootingPaddle object at 0x7fc41e2f98e0>]
+
+
+---
+level: 1
+powerups: [<break_brick.powerup.ShootingPaddle object at 0x7fc41e2f98e0>, <break_brick.powerup.ShootingPaddle object at 0x7fc41e2f9a00>]
+powerup: Trueexisting: [<break_brick.powerup.ShootingPaddle object at 0x7fc41e2f98e0>]
