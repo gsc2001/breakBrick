@@ -12,10 +12,11 @@ from .ball import Ball
 from .bullet import Bullet
 from .brick import Brick, ExplodingBrick, UnbreakableBrick, RainbowBrick
 from .objects import detect_collision
+from .ufo import UFO, Bomb
 from .powerup import ExpandPaddle, ShrinkPaddle, FastBall, BallMultiplier, ThruBall, PaddleGrab, ShootingPaddle
 import break_brick.utils as utils
 
-powerup_options = [ExpandPaddle, ShrinkPaddle, FastBall, BallMultiplier, ThruBall, PaddleGrab]
+powerup_options = [ExpandPaddle, ShrinkPaddle, FastBall, BallMultiplier, ThruBall, PaddleGrab, ShootingPaddle]
 
 
 class Game:
@@ -37,6 +38,7 @@ class Game:
         self._lives = 3
         self._score = 0
         self._current_level = 1
+        self._bomb_timer = config.BOMB_TIMER
         self._level_end_time = time.time() + config.FALLING_BRICK_TIME
         self._start_time = time.time()
 
@@ -49,12 +51,23 @@ class Game:
         # TODO: Add a key to skip levels
         self._power_ups = []
         self._bullets = []
+        self._bombs = []
+        self._ufo = None
         self._load_level(1)
         self._thru_balls = False  # variable to signify if the ball are thru or not
         self._falling_bricks = False  # To signify if the falling bricks is going on
         self._shooting_paddle = False
         self._next_shoot = 0
+        self._won = False
         utils.reset_screen()
+
+    def _is_boss_level(self):
+        return self._current_level == config.BOSS_LEVEL
+
+    def _create_boss_level(self):
+        self._bricks = []
+        _x, _ = self._paddle.get_position()
+        self._ufo = UFO(utils.get_arr(_x, 3))
 
     def _reset_ball(self):
         _paddle_pos = self._paddle.get_position()
@@ -77,7 +90,7 @@ class Game:
     def _increase_level(self):
         if self._current_level == config.BOSS_LEVEL:
             # GAME WON
-            self._game_over()
+            self._game_over(True)
             return
 
         self._load_level(self._current_level + 1)
@@ -88,6 +101,10 @@ class Game:
 
         self._current_level = level
         self._level_end_time = time.time() + config.FALLING_BRICK_TIME
+
+        if self._is_boss_level():
+            self._create_boss_level()
+
         file_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), config.BRICK_MAP_DIR,
                                  f'level_{self._current_level}.txt')
         self._bricks = Brick.get_brick_map(file_path)
@@ -119,12 +136,50 @@ class Game:
                 sys.exit(0)
             elif inp == 'd':
                 self._paddle.move_right()
+                if self._is_boss_level():
+                    self._ufo.move_right()
             elif inp == 'a':
                 self._paddle.move_left()
+                if self._is_boss_level():
+                    self._ufo.move_left()
             elif inp == ' ':
                 self._paddle.remove_ball()
 
             self._keyboard.clear()
+
+    def drop_bomb(self):
+        assert self._ufo is not None
+        self._bombs.append(Bomb(self._ufo.get_bomb_spawn_pos()))
+
+    def _try_drop_bomb(self):
+        if not self._is_boss_level() and self._ufo.is_active():
+            return
+
+        self._bomb_timer -= 1
+        if self._bomb_timer <= 0:
+            self.drop_bomb()
+            self._bomb_timer = config.BOMB_TIMER
+
+    def _ufo_defense(self):
+        assert self._ufo is not None
+        _, y = self._ufo.get_bomb_spawn_pos()
+
+        n_bricks = config.WIDTH // config.BRICK_WIDTH
+        brick_x = np.array(range(n_bricks)) * config.BRICK_WIDTH
+
+        affected_positions = np.ndarray((len(brick_x), 2))
+        affected_positions[:, 0] = brick_x
+        affected_positions[:, 1] = y
+
+        empty = np.ones_like(brick_x)
+
+        breakable = list(filter(lambda b: not isinstance(b, UnbreakableBrick), self._bricks))
+        for brick in breakable:
+            empty[(brick.get_position() == affected_positions)[:, 0]] = 0
+
+        for i, pos in enumerate(affected_positions):
+            if empty[i]:
+                self._bricks.append(Brick(np.array(pos), np.random.randint(low=1, high=4)))
 
     def _activate_powerup(self, powerup):
         if config.DEBUG:
@@ -169,11 +224,11 @@ class Game:
             self._shooting_paddle = powerup.deactivate(self._paddle)
 
     def try_spawn_powerup(self, pos, vel):
-        # do_spawn = np.random.random() > 1 - config.POWERUP_PROB
-        do_spawn = True
+        if self._is_boss_level():
+            return
+        do_spawn = np.random.random() > 1 - config.POWERUP_PROB
         if do_spawn:
-            # self._power_ups.append(powerup_options[np.random.randint(0, 6)](pos, vel))
-            self._power_ups.append(ShootingPaddle(pos, vel))
+            self._power_ups.append(powerup_options[np.random.randint(0, 7)](pos, vel))
 
     def _update_objects(self):
         for ball in self._balls:
@@ -184,6 +239,9 @@ class Game:
             brick.update()
         for bullet in self._bullets:
             bullet.update()
+
+        for bomb in self._bombs:
+            bomb.update()
 
         for powerup in self._power_ups:
             if powerup.is_falling():
@@ -201,13 +259,22 @@ class Game:
             if brick.is_active():
                 self._screen.draw(brick)
 
-        for ball in self._balls:
-            if ball.is_active():
-                self._screen.draw(ball)
-
         for bullet in self._bullets:
             if bullet.is_active():
                 self._screen.draw(bullet)
+
+        if self._is_boss_level():
+            if config.DEBUG:
+                assert self._ufo is not None
+            print(self._ufo)
+            self._screen.draw(self._ufo)
+            for bomb in self._bombs:
+                if bomb.is_active():
+                    self._screen.draw(bomb)
+
+        for ball in self._balls:
+            if ball.is_active():
+                self._screen.draw(ball)
 
         for powerup in self._power_ups:
             if powerup.is_falling():
@@ -231,20 +298,30 @@ class Game:
             if not _bullet.is_active():
                 self._bullets.pop(i)
 
-    def _game_over(self):
+        for i, _bomb in enumerate(self._bombs):
+            if not _bomb.is_active():
+                self._bombs.pop(i)
+
+    def _game_over(self, won: bool):
         self._playing = False
+        self._won = won
 
     def _check_live_end(self):
         if len(list(filter(lambda ball: ball.is_active(), self._balls))) == 0:
             self._lives -= 1
             self._reset_ball()
             if self._lives == 0:
-                self._game_over()
+                # GAME LOST
+                self._game_over(False)
 
     def _check_level_change(self):
         breakable_bricks = list(filter(lambda brick: not isinstance(brick, UnbreakableBrick), self._bricks))
-        if len(breakable_bricks) == 0:
+        if len(breakable_bricks) == 0 and not self._is_boss_level():
             self._increase_level()
+        if self._is_boss_level():
+            if not self._ufo.is_active():
+                # GAME WON
+                self._game_over(True)
 
     def _check_falling_start(self):
         if time.time() >= self._level_end_time:
@@ -260,7 +337,7 @@ class Game:
             h, _ = brick.get_shape()
             if paddle_y - (y + 1 + h) == 0:
                 # GAME OVER
-                self._game_over()
+                self._game_over(False)
                 return
             brick.set_position(np.array([x, y + 1]))
 
@@ -292,6 +369,17 @@ class Game:
                     else:
                         self._score += brick.handle_ball_collision(self._thru_balls, self.try_spawn_powerup, ball_vel)
 
+            # check collision with ufo
+            if self._is_boss_level():
+                _x_col, _y_col = detect_collision(ball, self._ufo)
+                if _x_col or _y_col:
+                    ball.handle_brick_collision(_x_col, _y_col, self._thru_balls)
+                    self._ufo.handle_ball_collision()
+                    if self._ufo.get_health() == 0.5 * config.UFO_HEALTH:
+                        self._ufo_defense()
+                    elif self._ufo.get_health() == 0.2 * config.UFO_HEALTH:
+                        self._ufo_defense()
+
         for i, powerup in enumerate(self._power_ups):
             # check if the powerup has touched the ground
             if powerup.is_activated():
@@ -312,6 +400,16 @@ class Game:
                         self._score += brick.handle_ball_collision(self._bricks, self.try_spawn_powerup, bullet_vel)
                     else:
                         self._score += brick.handle_ball_collision(self._thru_balls, self.try_spawn_powerup, bullet_vel)
+        if self._is_boss_level():
+            for bomb in self._bombs:
+                bomb.handle_wall_collision(kill=True)
+                _x_col, _y_col = detect_collision(bomb, self._paddle)
+                if _x_col or _y_col:
+                    # loose a life
+                    bomb.destroy()
+                    self._lives -= 1
+                    if self._lives == 0:
+                        self._game_over(False)
 
     def _shoot_if_possible(self):
         if not self._shooting_paddle:
@@ -338,6 +436,8 @@ class Game:
             powerup = list(filter(
                 lambda _pow: isinstance(_pow, ShootingPaddle) and _pow.is_activated(), self._power_ups))[0]
             print(f'Shooting paddle time left: {round(powerup.get_time() / config.FRAME_RATE, 2)}')
+        if self._is_boss_level():
+            print("UFO: " + self._ufo.get_health_bar())
         print(colorama.Style.RESET_ALL, end='')
 
     def debug_info(self):
@@ -362,6 +462,7 @@ class Game:
             self._screen.clear()
             self._handle_input()
             self._shoot_if_possible()
+            self._try_drop_bomb()
             self._handle_collisions()
             self._update_objects()
             self._clean()
@@ -374,3 +475,11 @@ class Game:
 
             while time.perf_counter() - start_time < 1 / config.FRAME_RATE:  # frame rate
                 pass
+
+        utils.reset_screen()
+        print(colorama.Style.BRIGHT + colorama.Fore.WHITE)
+        if self._won:
+            print("YOU WON!!")
+        else:
+            print("YOU LOST :(")
+        print(colorama.Style.RESET_ALL)

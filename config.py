@@ -8,8 +8,7 @@ scrh, scrw = map(int, os.popen('stty size', 'r').read().split())
 # TODO: Change this to false before submitting
 DEBUG = True
 
-BOSS_LEVEL = 2  # this is same as number of levels as the boss level is the last level
-
+BOSS_LEVEL = 1  # this is same as number of levels as the boss level is the last level
 
 GRAVITY = 0.08
 
@@ -30,14 +29,14 @@ PADDLE_CHANGE_AMT = 2
 PADDLE_SPEED = 1
 
 # ball
-BALL_SPEED_NORMAL = 1
+BALL_SPEED_NORMAL = 1.5
 FAST_BALL_MULTIPLIER = 1.2
 
 # collision buffer
 COLLISION_BUFFER = 1
 
 # brick
-BRICK_START_HEIGHT = 25
+BRICK_START_HEIGHT = 0
 BRICK_MAP_DIR = 'levels'
 BRICK_WIDTH = 6
 BRICK_BREAK_SCORE = 100
@@ -52,3 +51,8 @@ FALLING_BRICK_TIME = 1000000
 
 BULLET_DELAY_FRAMES = 10
 BULLET_SPEED = 1.5
+
+BOMB_TIMER = 60
+BOMB_SPEED = 0.75
+
+UFO_HEALTH = 10
