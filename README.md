@@ -14,6 +14,7 @@ python main.py
 - `a` to move left
 - `d` to move right
 - `q` to quit
+- `n` to move to next level
 - `<space>` to release the ball
 
 ## Legend
