@@ -31,6 +31,8 @@ class Game:
         colorama.init()
         # clear the screen
         print("\033[?25l\033[2J", end='')
+        if config.HEIGHT < 30:
+            raise SystemExit("Insufficient height of the terminal")
         self._playing = True
         self._keyboard = utils.KBHit()
         self._screen = Screen()
@@ -48,7 +50,6 @@ class Game:
         self._reset_ball()
         # self._bricks = [Brick(np.array([config.WIDTH // 2 - 2, config.HEIGHT - 17]), 3)]
         self._bricks = []
-        # TODO: Add a key to skip levels
         self._power_ups = []
         self._bullets = []
         self._bombs = []
@@ -81,7 +82,8 @@ class Game:
         _x_vel = int(_x_pos - _paddle_middle) / _w
 
         _vel = np.array([_x_vel, -config.BALL_SPEED_NORMAL])
-
+        if self._is_boss_level():
+            _vel[1] *= 1.5
         ball = Ball(pos=np.array([_x_pos, _paddle_pos[1] - 2]), vel=_vel)
 
         self._balls = [ball]
@@ -98,7 +100,8 @@ class Game:
     def _load_level(self, level: int):
         if config.DEBUG:
             assert 1 <= level <= config.BOSS_LEVEL
-
+        utils.reset_screen()
+        self._screen.clear()
         self._current_level = level
         self._level_end_time = time.time() + config.FALLING_BRICK_TIME
 
@@ -142,6 +145,9 @@ class Game:
                 self._paddle.move_left()
                 if self._is_boss_level():
                     self._ufo.move_left()
+            elif inp == 'n':
+                # move to next level
+                self._increase_level()
             elif inp == ' ':
                 self._paddle.remove_ball()
 
@@ -152,9 +158,10 @@ class Game:
         self._bombs.append(Bomb(self._ufo.get_bomb_spawn_pos()))
 
     def _try_drop_bomb(self):
-        if not self._is_boss_level() and self._ufo.is_active():
+        if not self._is_boss_level():
             return
-
+        # TODO: Remove this
+        return
         self._bomb_timer -= 1
         if self._bomb_timer <= 0:
             self.drop_bomb()
@@ -175,7 +182,7 @@ class Game:
 
         breakable = list(filter(lambda b: not isinstance(b, UnbreakableBrick), self._bricks))
         for brick in breakable:
-            empty[(brick.get_position() == affected_positions)[:, 0]] = 0
+            empty[np.all(brick.get_position() == affected_positions, axis=1)] = 0
 
         for i, pos in enumerate(affected_positions):
             if empty[i]:
@@ -266,7 +273,6 @@ class Game:
         if self._is_boss_level():
             if config.DEBUG:
                 assert self._ufo is not None
-            print(self._ufo)
             self._screen.draw(self._ufo)
             for bomb in self._bombs:
                 if bomb.is_active():
@@ -434,8 +440,9 @@ class Game:
             print("Time attack going on!")
         if self._shooting_paddle:
             powerup = list(filter(
-                lambda _pow: isinstance(_pow, ShootingPaddle) and _pow.is_activated(), self._power_ups))[0]
-            print(f'Shooting paddle time left: {round(powerup.get_time() / config.FRAME_RATE, 2)}')
+                lambda _pow: isinstance(_pow, ShootingPaddle) and _pow.is_activated(), self._power_ups))
+            if len(powerup) > 0:
+                print(f'Shooting paddle time left: {round(powerup[0].get_time() / config.FRAME_RATE, 2)}')
         if self._is_boss_level():
             print("UFO: " + self._ufo.get_health_bar())
         print(colorama.Style.RESET_ALL, end='')
