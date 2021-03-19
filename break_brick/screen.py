@@ -38,6 +38,8 @@ class Screen:
         Puts an object on screen
         :param obj: the obj to put
         """
+        if not obj.is_active():
+            return
         _x, _y = map(int, obj.get_position())
         _rep, _color = obj.get_rep()
         _h, _w = map(int, _rep.shape)

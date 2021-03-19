@@ -48,7 +48,6 @@ class Game:
         self._reset_ball()
         # self._bricks = [Brick(np.array([config.WIDTH // 2 - 2, config.HEIGHT - 17]), 3)]
         self._bricks = []
-        # TODO: Add a key to skip levels
         self._power_ups = []
         self._bullets = []
         self._bombs = []
@@ -179,7 +178,7 @@ class Game:
 
         breakable = list(filter(lambda b: not isinstance(b, UnbreakableBrick), self._bricks))
         for brick in breakable:
-            empty[(brick.get_position() == affected_positions)[:, 0]] = 0
+            empty[np.all((brick.get_position() == affected_positions), axis=1)] = 0
 
         for i, pos in enumerate(affected_positions):
             if empty[i]:
@@ -213,7 +212,6 @@ class Game:
             elif isinstance(powerup, ShootingPaddle):
                 self._shooting_paddle = powerup.activate(self._paddle)
 
-
     def _deactivate_powerup(self, powerup):
         if config.DEBUG:
             assert powerup.is_activated(), f"[ERROR] Powerup deactivate without activate type: {type(powerup)}"
@@ -231,11 +229,9 @@ class Game:
     def try_spawn_powerup(self, pos, vel):
         if self._is_boss_level():
             return
-        # do_spawn = np.random.random() > 1 - config.POWERUP_PROB
-        do_spawn = True
+        do_spawn = np.random.random() > 1 - config.POWERUP_PROB
         if do_spawn:
-            # self._power_ups.append(powerup_options[np.random.randint(0, 7)](pos, vel))
-            self._power_ups.append(ShootingPaddle(pos, vel))
+            self._power_ups.append(powerup_options[np.random.randint(0, 7)](pos, vel))
 
     def _update_objects(self):
         for ball in self._balls:
@@ -401,12 +397,13 @@ class Game:
             for brick in self._bricks:
                 _x_col, _y_col = detect_collision(bullet, brick)
                 if _x_col or _y_col:
-                    bullet_vel = bullet.get_velocity()
                     bullet.destroy()
                     if isinstance(brick, ExplodingBrick):
-                        self._score += brick.handle_ball_collision(self._bricks, self.try_spawn_powerup, bullet_vel)
+                        self._score += brick.handle_ball_collision(self._bricks, self.try_spawn_powerup,
+                                                                   np.array([0.0, -config.BULLET_SPEED]))
                     else:
-                        self._score += brick.handle_ball_collision(self._thru_balls, self.try_spawn_powerup, bullet_vel)
+                        self._score += brick.handle_ball_collision(self._thru_balls, self.try_spawn_powerup,
+                                                                   np.array([0.0, -config.BULLET_SPEED]))
         if self._is_boss_level():
             for bomb in self._bombs:
                 bomb.handle_wall_collision(kill=True)
