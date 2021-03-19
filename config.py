@@ -5,8 +5,7 @@ from colorama import Fore, Back, Style
 # get the terminal screen size
 scrh, scrw = map(int, os.popen('stty size', 'r').read().split())
 
-# TODO: Change this to false before submitting
-DEBUG = True
+DEBUG = False
 
 BOSS_LEVEL = 3  # this is same as number of levels as the boss level is the last level
 
@@ -47,9 +46,9 @@ POWERUP_FRAMES = FRAME_RATE * 12
 POWERUP_PROB = 0.1
 
 # falling bricks
-FALLING_BRICK_TIME = 1000000
+FALLING_BRICK_TIME = 60
 
-BULLET_DELAY_FRAMES = 10
+BULLET_DELAY_FRAMES = 15
 BULLET_SPEED = 1
 
 BOMB_TIMER = 60

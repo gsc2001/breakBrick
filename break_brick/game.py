@@ -272,7 +272,6 @@ class Game:
         if self._is_boss_level():
             if config.DEBUG:
                 assert self._ufo is not None
-            print(self._ufo)
             self._screen.draw(self._ufo)
             for bomb in self._bombs:
                 if bomb.is_active():
