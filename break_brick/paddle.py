@@ -12,7 +12,7 @@ class Paddle(GameObject):
         rep = np.full((1, config.PADDLE_WIDTH_NORMAL), "=")
         color = np.array([colorama.Back.WHITE, colorama.Fore.WHITE])
 
-        super().__init__(rep, np.array([config.WIDTH // 2 - config.PADDLE_WIDTH_NORMAL // 2, config.HEIGHT - 2]),
+        super().__init__(rep, np.array([config.WIDTH // 2 - config.PADDLE_WIDTH_NORMAL // 2, config.HEIGHT - 4]),
                          color)
 
         self._width = config.PADDLE_WIDTH_NORMAL

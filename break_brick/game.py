@@ -110,16 +110,22 @@ class Game:
         self._bricks = Brick.get_brick_map(file_path)
 
         # Remove all powerups
+        with open('logs', 'w') as f:
+            f.write(f'{self._current_level}\n')
+            for powerup in self._power_ups:
+                f.write(f'{powerup.is_activated()}, {powerup.is_active()}, {powerup}, {id(powerup)}\n')
+
         for powerup in self._power_ups:
             if not powerup.is_active():
                 continue
-            if not powerup.is_activated():
+            if powerup.is_falling():
                 powerup.destroy()
             else:
                 self._deactivate_powerup(powerup)
 
         for bullet in self._bullets:
             bullet.destroy()
+
         self._power_ups = []
         self._bullets = []
         self._falling_bricks = False
@@ -142,6 +148,8 @@ class Game:
                 self._paddle.move_left()
                 if self._is_boss_level():
                     self._ufo.move_left()
+            elif inp == 'n':
+                self._increase_level()
             elif inp == ' ':
                 self._paddle.remove_ball()
 
@@ -152,7 +160,7 @@ class Game:
         self._bombs.append(Bomb(self._ufo.get_bomb_spawn_pos()))
 
     def _try_drop_bomb(self):
-        if not self._is_boss_level() and self._ufo.is_active():
+        if not self._is_boss_level():
             return
 
         self._bomb_timer -= 1
@@ -193,9 +201,16 @@ class Game:
             self._balls.extend(new_balls)
         else:
             # powerups which can be applied only once, just extend the time of the prev one
+            f = open('logs2', 'a')
+            f.write('\n\n---\n')
+            f.write(f'level: {self._current_level}\n')
+            f.write(f'powerups: {self._power_ups}\n')
+            f.write((f'powerup: {powerup.is_active()}'))
+
             existing = list(
                 filter(lambda _powerup: isinstance(_powerup, type(powerup)) and _powerup.is_activated(),
                        self._power_ups))
+            f.write(f'existing: {existing}\n')
             if len(existing) != 0:
                 if config.DEBUG:
                     assert len(existing) == 1
@@ -208,6 +223,12 @@ class Game:
                 powerup.activate(self._paddle)
             elif isinstance(powerup, ShootingPaddle):
                 self._shooting_paddle = powerup.activate(self._paddle)
+
+            existing = list(
+                filter(lambda _powerup: isinstance(_powerup, type(powerup)) and _powerup.is_activated(),
+                       self._power_ups))
+            f.write(f'new existing: {existing[0].is_activated()}\n')
+            f.close()
 
     def _deactivate_powerup(self, powerup):
         if config.DEBUG:
@@ -226,9 +247,11 @@ class Game:
     def try_spawn_powerup(self, pos, vel):
         if self._is_boss_level():
             return
-        do_spawn = np.random.random() > 1 - config.POWERUP_PROB
+        # do_spawn = np.random.random() > 1 - config.POWERUP_PROB
+        do_spawn = True
         if do_spawn:
-            self._power_ups.append(powerup_options[np.random.randint(0, 7)](pos, vel))
+            # self._power_ups.append(powerup_options[np.random.randint(0, 7)](pos, vel))
+            self._power_ups.append(ShootingPaddle(pos, vel))
 
     def _update_objects(self):
         for ball in self._balls:
